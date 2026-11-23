@@ -1,0 +1,35 @@
+rules_version = '2';
+// Reglas de Firestore para el torneo.
+// Cambia CLAVE_AYUDANTES y CLAVE_ORGANIZADOR por tus propias claves ANTES de pegarlas en Firebase.
+// Estas claves no se guardan en la página: solo existen aquí, en las reglas de tu proyecto.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function organizador() {
+      return request.auth != null && exists(/databases/$(database)/documents/organizadores/$(request.auth.uid));
+    }
+    function ayudante() {
+      return request.auth != null && exists(/databases/$(database)/documents/ayudantes/$(request.auth.uid));
+    }
+    // Todos pueden ver el torneo; solo el organizador lo crea o lo cambia.
+    match /torneo/{doc} {
+      allow read: if true;
+      allow write: if organizador();
+    }
+    // Todos pueden ver los resultados; ayudantes y organizador los cargan.
+    match /resultados/{doc} {
+      allow read: if true;
+      allow write: if ayudante() || organizador();
+    }
+    // Entrar como organizador o ayudante: hay que escribir la clave correcta.
+    match /organizadores/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.clave == "CLAVE_ORGANIZADOR";
+    }
+    match /ayudantes/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.clave == "CLAVE_AYUDANTES";
+    }
+  }
+}
