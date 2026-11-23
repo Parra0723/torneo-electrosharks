@@ -232,7 +232,7 @@ body[data-vista=pantalla] .top,body[data-vista=ayudante] .top{padding-bottom:18p
 <body>
 <header class="top"><div class="top-in">
   <div class="tit">
-    <h1 id="nombre">Torneo FIFA 2v2</h1>
+    <h1 id="nombre">Torneo</h1>
     <div class="fase"><span class="pill" id="fase">Cargando…</span><span class="reloj" id="reloj"></span></div>
   </div>
   <nav id="nav" aria-label="Secciones"></nav>
@@ -564,7 +564,7 @@ function llave(d) {
 /* ---------- Vistas ---------- */
 const V = {};
 V.pantalla = d => {
-  if (!d) return `<div class="vacio"><h2>${esc(S.cfg?.nombre || "Torneo FIFA 2v2")}</h2><p class="muted">Muy pronto: sorteo de grupos.</p></div>`;
+  if (!d) return `<div class="vacio"><h2>${esc(S.cfg?.nombre || "Torneo")}</h2><p class="muted">Muy pronto: sorteo de grupos.</p></div>`;
   const ahora = d.actual, partidos = d.r.partidos;
   if (ahora == null) return llave(d);
   const enTurno = t => [1, 2, 3].map(c => partidos.find(m => m.turno === t && m.consola === c));
@@ -719,7 +719,7 @@ V.registro = d => {
 V.organizar = d => {
   if (!S.esDueno) return soloDueno();
   if (S.cfg && !S.rehacer) return panelDueno(d);
-  if (!S.borrador) S.borrador = { nombre: S.cfg?.nombre || "Pichurrito", inicio: S.cfg?.inicio || "08:00", minTurno: S.cfg?.minTurno || 15, texto: S.cfg ? S.cfg.equipos.map(e => e.nombre + (e.j1 || e.j2 ? " - " + [e.j1, e.j2].filter(Boolean).join(" / ") : "")).join("\n") : "" };
+  if (!S.borrador) S.borrador = { nombre: S.cfg?.nombre || "Torneo", inicio: S.cfg?.inicio || "08:00", minTurno: S.cfg?.minTurno || 15, texto: S.cfg ? S.cfg.equipos.map(e => e.nombre + (e.j1 || e.j2 ? " - " + [e.j1, e.j2].filter(Boolean).join(" / ") : "")).join("\n") : "" };
   const B = S.borrador;
   if (S.preview) {
     return `<h2>Así quedaron los grupos</h2><p class="sub">${esc(T.FORMATOS[S.preview.equipos.length].texto)}. Si no te gusta, vuelve a sortear.</p>
@@ -766,7 +766,8 @@ function panelDueno(d) {
       <div class="card"><h3>Jugadores</h3><p class="muted" style="margin:6px 0 12px">Manda el calendario al grupo de WhatsApp.</p><button class="btn acc" data-acc="copiar-todo">Copiar calendario para WhatsApp</button></div>
       <div class="card"><h3>Empezar de cero</h3><p class="muted" style="margin:6px 0 12px">Vuelve a sortear o cambia la lista. El torneo actual sigue hasta que publiques el nuevo.</p>
         <button class="btn peligro" data-acc="rehacer">Crear torneo nuevo</button></div></div>
-    <div class="card"><h3>Nombres de los dúos</h3><p class="muted" style="margin:6px 0 12px;font-size:14px">Corrige un nombre sin perder resultados.</p>
+    <div class="card"><h3>Nombres</h3><p class="muted" style="margin:6px 0 12px;font-size:14px">Corrige un nombre sin perder resultados.</p>
+      <label style="margin-bottom:12px">Nombre del torneo (sale arriba en la pantalla)<input id="ren-torneo" value="${esc(S.cfg.nombre)}" maxlength="40"></label>
       <div class="grid" style="gap:8px">${S.cfg.equipos.map(e => `<input data-ren="${esc(e.id)}" value="${esc(e.nombre)}" maxlength="40" aria-label="Nombre del dúo">`).join("")}</div>
       <button class="btn pri" style="margin-top:12px" data-acc="renombrar">Guardar nombres</button></div></div>`;
 }
@@ -815,7 +816,7 @@ function render() {
   const vista = vistaActual();
   document.body.dataset.vista = vista;
   if (vista === "pantalla") $("#toast").hidden = true;
-  $("#nombre").textContent = S.cfg?.nombre || "Torneo FIFA 2v2";
+  $("#nombre").textContent = S.cfg?.nombre || "Torneo";
   document.title = (S.cfg?.nombre || "Torneo FIFA") + " 2v2";
   $("#fase").textContent = vista === "ayudante" ? "Ayudantes" : S.modo === "cargando" ? "Cargando…" : faseTexto(d);
   if (KIOSCO.includes(vista)) $("#nav").innerHTML = "";
@@ -922,7 +923,7 @@ document.addEventListener("click", async ev => {
     case "publicar": {
       if (S.cfg && !(await confirmar("¿Reemplazar el torneo?", "Se borrarán del calendario todos los resultados cargados hasta ahora.", "Publicar"))) return;
       const B = S.borrador, minT = Math.max(10, Math.min(30, parseInt(B.minTurno, 10) || 15));
-      const cfg = { nombre: (B.nombre || "Torneo FIFA").slice(0, 40), inicio: /^\d\d:\d\d$/.test(B.inicio) ? B.inicio : "08:00", minTurno: minT, consolas: 3,
+      const cfg = { nombre: (B.nombre || "Torneo").slice(0, 40), inicio: /^\d\d:\d\d$/.test(B.inicio) ? B.inicio : "08:00", minTurno: minT, consolas: 3,
         equipos: S.preview.equipos, grupos: S.preview.grupos, gen: Date.now().toString(36) };
       try {
         await store.config(cfg);
@@ -934,7 +935,8 @@ document.addEventListener("click", async ev => {
     case "renombrar": {
       const nuevos = S.cfg.equipos.map(e => { const inp = document.querySelector(`[data-ren="${e.id}"]`); return { ...e, nombre: (inp?.value.trim() || e.nombre).slice(0, 40) }; });
       if (new Set(nuevos.map(e => e.nombre.toLowerCase())).size !== nuevos.length) return toast("Hay nombres repetidos.");
-      try { await store.config({ ...S.cfg, equipos: nuevos }); toast("Nombres guardados."); } catch {}
+      const nt = ($("#ren-torneo")?.value || "").trim().slice(0, 40) || S.cfg.nombre;
+      try { await store.config({ ...S.cfg, nombre: nt, equipos: nuevos }); toast("Nombres guardados."); } catch {}
       return;
     }
     case "empezar": {
