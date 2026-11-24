@@ -1362,7 +1362,9 @@ function usarLocal() {
   const llego = k => { ini[k] = true; if (S.modo === "cargando" && ini.cfg && ini.ctrl && ini.res) S.modo = "db"; render(); };
   setTimeout(() => { if (S.modo === "cargando" && ini.cfg) { S.modo = "db"; render(); } }, 3000);
   const espera = setTimeout(() => { if (!listo) { S.aviso = "Los datos del torneo todavía no cargan. Revisa la conexión a internet."; if (S.modo === "cargando") S.modo = "db"; render(); } }, 10000);
-  db.doc("torneo/config").onSnapshot(s => {
+  // includeMetadataChanges: si la copia guardada en el dispositivo ya coincide con el servidor, Firestore solo avisa
+  // con un cambio de metadatos; sin esto, la confirmación del servidor nunca llega y saldría un falso aviso de conexión.
+  db.doc("torneo/config").onSnapshot({ includeMetadataChanges: true }, s => {
     const x = s.exists ? s.data() : null;
     S.cfg = x && Array.isArray(x.equipos) && Array.isArray(x.grupos) && T.FORMATOS[x.equipos.length] ? x : null;
     if (!s.metadata.fromCache) { listo = true; clearTimeout(espera); S.aviso = ""; }
