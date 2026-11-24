@@ -19,7 +19,7 @@
   --campo:#00146E;--azul:#001E96;--panel:#0A2596;--panel2:#12309F;
   --placa:#E8E8E5;--placa2:#D8D8D2;--canto:#B4B4AC;
   --tinta:#00104F;--tinta2:#4B5684;--texto:#E8E8E5;--suave:#AEB8E6;
-  --rojo:#D20043;--rojo2:#FF5A88;--amarilla:#FFD400;--linea:rgba(232,232,229,.16);
+  --rojo:#D20043;--rojot:#B8003B;--rojo2:#FF85A8;--amarilla:#FFD400;--linea:rgba(232,232,229,.16);
   --mut:var(--suave);--vivo:var(--rojo2);--okc:#fff;--malc:var(--rojo2);
   /* nombres usados por el código */
   --bg:var(--campo);--card:var(--placa);--ink:var(--tinta);--soft:var(--placa2);--line:var(--linea);--ok:var(--placa);--acc:var(--rojo);--live:var(--rojo);--pitch:var(--azul);
@@ -36,7 +36,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 :focus-visible{outline:3px solid var(--amarilla);outline-offset:2px}
 
 /* Placas: superficie clara con canto inferior duro */
-.card,.con,.pt,.ko,.lp,.modal .card,.prox{background:var(--placa);color:var(--tinta);--mut:var(--tinta2);--vivo:var(--rojo);--okc:var(--azul);--malc:var(--rojo);--line:#C9C9C2;border-radius:8px;box-shadow:0 3px 0 var(--canto)}
+.card,.con,.pt,.ko,.lp,.modal .card,.prox{background:var(--placa);color:var(--tinta);--mut:var(--tinta2);--vivo:var(--rojot);--okc:var(--azul);--malc:var(--rojot);--line:#C9C9C2;border-radius:8px;box-shadow:0 3px 0 var(--canto)}
 .card{padding:18px}
 
 /* Banda superior */
@@ -64,6 +64,9 @@ h3{font-size:24px}
 .muted{color:var(--mut)}
 .ph{color:var(--mut);font-style:italic;font-weight:500}
 .ok{color:var(--okc);font-weight:700}.mal{color:var(--malc);font-weight:700}
+.err{color:var(--malc);font-weight:700;font-size:15px;margin:-4px 0 0}
+[aria-invalid=true]{border-color:var(--rojot)}
+.btn[aria-busy=true]{opacity:.7;cursor:progress}
 .vacio{text-align:center;padding:64px 16px;display:grid;gap:14px;justify-items:center}
 
 /* Botones y chips: heredan el color de donde están (azul o placa) */
@@ -72,11 +75,11 @@ h3{font-size:24px}
 .btn.pri{background:var(--azul);border-color:var(--azul);color:#fff;box-shadow:0 3px 0 #000c45}
 .btn.acc{background:var(--rojo);border-color:var(--rojo);color:#fff;box-shadow:0 3px 0 #7d0028}
 .btn.fin{background:var(--tinta);border-color:var(--tinta);color:#fff;box-shadow:0 3px 0 #000}
-.btn.peligro{color:var(--rojo)}
+.btn.peligro{color:var(--malc)}
 .btn:active{transform:translateY(2px);box-shadow:none}
 .btn[disabled]{opacity:.45;cursor:not-allowed}
 .btn.grande{min-height:58px;font-size:19px;width:100%;margin-top:12px}
-.btn.chico{min-height:38px;padding:0 12px;font-size:15px;border-width:1.5px}
+.btn.chico{min-height:44px;padding:0 12px;font-size:15px;border-width:1.5px}
 .chips{display:flex;gap:8px;flex-wrap:wrap}
 .chips3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));max-width:480px}.chips3 .chip{padding:0 8px}
 .chip{min-height:46px;padding:0 16px;border-radius:6px;border:2px solid currentColor;background:transparent;color:inherit;font-weight:700;cursor:pointer}
@@ -99,7 +102,7 @@ h3{font-size:24px}
 .lado.win .n::after{content:" ✓";color:var(--azul)}
 .con.libre{opacity:.6}
 .con.envivo .con-h{background:var(--rojo)}
-.con.envivo .g{color:var(--rojo)}
+.con.envivo .g{color:var(--rojot)}
 .con.gol .g{animation:gol 1.4s ease-out 2}
 @keyframes gol{0%{transform:scale(1)}30%{transform:scale(1.45)}100%{transform:scale(1)}}
 .vivo{display:inline-flex;align-items:center;gap:7px;color:var(--vivo);font-weight:700;font-size:15px}
@@ -121,7 +124,9 @@ h3{font-size:24px}
 .sigt{font-size:26px;margin-top:24px}
 .pan2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
 .pan2 .sigt{margin-top:0}
-.gmini{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px}
+.gmini{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,205px),1fr));gap:12px}
+.gfull{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr))}
+.gfull th,.gfull td{padding:7px 5px}.gfull td.n{min-width:7em}
 
 /* Filas de partido */
 .pts{display:grid;gap:8px}
@@ -130,7 +135,7 @@ h3{font-size:24px}
 .pt .c b{display:block;color:var(--tinta);font:800 18px/1.1 var(--disp)}
 .pt .l{text-align:right;font-weight:700;font-size:18px}.pt .v{font-weight:700;font-size:18px}
 .pt .mc{font:900 28px/1 var(--disp);white-space:nowrap;text-align:center;min-width:3.2em;font-variant-numeric:tabular-nums}
-.pt .mc.envivo{color:var(--rojo)}
+.pt .mc.envivo{color:var(--rojot)}
 .pt .vs{color:var(--mut);text-align:center;min-width:3.2em;font-weight:600}
 .pt .w{color:var(--azul)}
 .pt.mio{box-shadow:inset 6px 0 0 var(--rojo),0 3px 0 var(--canto)}
@@ -150,7 +155,7 @@ th{font-size:14px;color:var(--mut);font-weight:600}
 td.n,th.n{text-align:left;white-space:normal;font-weight:700}
 td.p{font:900 22px/1 var(--disp)}
 tr.q td:first-child{box-shadow:inset 5px 0 0 var(--azul)}
-tr.q2 td:first-child{box-shadow:inset 5px 0 0 var(--rojo)}
+tr.q2 td:first-child{background:linear-gradient(var(--rojo),var(--rojo)) left/5px 100% no-repeat;background-image:repeating-linear-gradient(180deg,var(--rojo) 0 4px,transparent 4px 7px);background-size:5px 100%;background-repeat:no-repeat}
 tr.corte td{border-bottom:2px dashed var(--mut)}
 .card h3{margin-bottom:6px}
 /* Tablas de la pantalla: paneles azules */
@@ -159,6 +164,7 @@ tr.corte td{border-bottom:2px dashed var(--mut)}
 .mini td.p{font-size:20px}
 .mini tr.q td:first-child{box-shadow:inset 5px 0 0 var(--placa)}
 .leyenda{display:flex;gap:18px;flex-wrap:wrap;font-size:15px;color:var(--mut);margin:14px 0}
+.leyenda i.q2{background:repeating-linear-gradient(180deg,var(--rojo) 0 3px,transparent 3px 5px)!important}
 .leyenda i{display:inline-block;width:14px;height:14px;border-radius:3px;margin-right:7px;vertical-align:-2px}
 
 /* Llave en espejo */
@@ -188,9 +194,10 @@ tr.corte td{border-bottom:2px dashed var(--mut)}
 .ko .kr+.kr{border-top:1px solid #C9C9C2}
 .ko .kn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ko .kr b{font:900 26px/1 var(--disp);white-space:nowrap}
-.ko .kr b.envivo{color:var(--rojo)}
+.ko .kr b.envivo{color:var(--rojot)}
 .ko .kr b small{font:600 12px var(--txt);color:var(--mut)}
 .ko .kr.win{box-shadow:inset 5px 0 0 var(--azul)}
+.ko .kr.win .kn::after{content:" ✓";color:var(--azul)}
 .ko .kr.out{color:var(--mut)}
 .ko.final{outline:3px solid var(--rojo);outline-offset:3px}
 .ko.final .kh{background:var(--rojo);color:#fff}
@@ -264,6 +271,7 @@ main>label,.duo>label{color:var(--texto)}
   .turno{grid-template-columns:1fr}.pt{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)}.pt .c{grid-column:1/-1}
   .con{grid-template-columns:6.5em minmax(0,1fr)}.cnum{font-size:52px}
   .ed .g{font-size:80px}
+  .gfull .opc{display:none}
   .tjrow{grid-template-columns:auto auto minmax(0,1fr)}.tjrow>span:first-child{grid-column:1/-1}.tjrow .am{justify-self:start}
   table{font-size:14px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px;border-bottom:1px solid var(--line)}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:7em;text-align:start;white-space:normal}.stack td::before{content:attr(data-l);float:inline-start;width:6.5em;margin-inline-start:-7em;color:var(--mut);font-weight:600}.stack td:empty{display:none}}
 </style>
@@ -279,7 +287,7 @@ main>label,.duo>label{color:var(--texto)}
 </div></header>
 <main id="app"><div class="vacio"><p class="muted">Cargando el torneo…</p></div></main>
 <div class="modal" id="modal" hidden><div class="card" role="dialog" aria-modal="true" id="modal-c"></div></div>
-<div class="toast" id="toast" hidden></div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 <script>
 /* ===== Lógica del torneo (pura, sin DOM) ===== */
 const T = (() => {
@@ -470,7 +478,7 @@ const LS = {
 const S = {
   modo: "cargando", cfg: null, resRaw: [], res: {}, ctrl: { atraso: 0 },
   esDueno: false, esAyudante: false, puede: false, authError: false, uid: null, consola: LS.get("pch-consola", 1), miDuo: LS.get("pch-miduo", ""),
-  ayudante: LS.get("pch-ayudante", ""), edit: null, borrador: null, preview: null, rehacer: false, aviso: "", soloLectura: false,
+  ayudante: LS.get("pch-ayudante", ""), err: null, ocupado: false, edit: null, borrador: null, preview: null, rehacer: false, aviso: "", soloLectura: false,
 };
 let db = null, user = null, pendiente = false;
 
@@ -524,7 +532,7 @@ function escribirVivo(id, data, quien) {
   })();
 }
 const num = v => Number.isFinite(v) ? v : 0;
-const tarj = n => n > 0 ? `<span class="ta" title="Tarjetas amarillas">${n}</span>` : "";
+const tarj = n => n > 0 ? `<span class="ta" role="img" aria-label="${n} ${n === 1 ? "tarjeta amarilla" : "tarjetas amarillas"}" title="Tarjetas amarillas">${n}</span>` : "";
 const marcados = {};
 function golNuevo(id, r) {
   const k = r && (r.estado === "jugando" || T.final(r)) ? `${r.gl}-${r.gv}` : "";
@@ -567,17 +575,17 @@ function tabla(d, g, mini) {
   const listos = !!d.r.info, pasan = listos ? new Set(d.r.info.semillas.map(s => s.id)) : null;
   const clase = (x, i) => listos ? (pasan.has(x.id) ? "q" : "") : (i === 0 || (i === 1 && f.segundos === f.grupos)) ? "q" : i === 1 ? "q2" : "";
   const head = mini ? `<tr><th>#</th><th class="n">Grupo ${esc(g.id)}</th><th>PJ</th><th>DG</th><th>Pts</th></tr>`
-    : `<tr><th>#</th><th class="n">Dúo</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>GF</th><th>GC</th><th>DG</th><th title="Tarjetas amarillas">TA</th><th>Pts</th></tr>`;
+    : `<tr><th>#</th><th class="n">Dúo</th><th>PJ</th><th class="opc">G</th><th class="opc">E</th><th class="opc">P</th><th>GF</th><th class="opc">GC</th><th>DG</th><th title="Tarjetas amarillas">TA</th><th>Pts</th></tr>`;
   const body = filas.map((x, i) => {
     const dg = x.gf - x.gc, dgs = dg > 0 ? "+" + dg : dg;
     return mini ? `<tr class="${clase(x, i)}"><td>${i + 1}</td><td class="n">${esc(d.eq[x.id].nombre)}</td><td>${x.pj}</td><td>${dgs}</td><td class="p">${x.pts}</td></tr>`
-      : `<tr class="${clase(x, i)}"><td>${i + 1}</td><td class="n">${esc(d.eq[x.id].nombre)}</td><td>${x.pj}</td><td>${x.g}</td><td>${x.e}</td><td>${x.p}</td><td>${x.gf}</td><td>${x.gc}</td><td>${dgs}</td><td>${x.ta}</td><td class="p">${x.pts}</td></tr>`;
+      : `<tr class="${clase(x, i)}"><td>${i + 1}</td><td class="n">${esc(d.eq[x.id].nombre)}</td><td>${x.pj}</td><td class="opc">${x.g}</td><td class="opc">${x.e}</td><td class="opc">${x.p}</td><td>${x.gf}</td><td class="opc">${x.gc}</td><td>${dgs}</td><td>${x.ta}</td><td class="p">${x.pts}</td></tr>`;
   }).join("");
   return `<div class="card${mini ? " mini" : ""}">${mini ? "" : `<h3>Grupo ${esc(g.id)}</h3>`}<div class="scroll"><table>${head}${body}</table></div></div>`;
 }
 function leyenda() {
   const f = T.FORMATOS[S.cfg.equipos.length];
-  return `<div class="leyenda"><span><i style="background:var(--ok)"></i>Pasa a cuartos</span>${f.segundos < f.grupos ? `<span><i style="background:var(--acc)"></i>Pelea por ser de los ${f.segundos} mejores segundos</span>` : ""}</div>`;
+  return `<div class="leyenda"><span><i style="background:var(--ok)"></i>Pasa a cuartos</span>${f.segundos < f.grupos ? `<span><i class="q2" style="background:var(--acc)"></i>Pelea por ser de los ${f.segundos} mejores segundos</span>` : ""}</div>`;
 }
 
 /* ---------- Llave (bracket) ---------- */
@@ -681,7 +689,7 @@ V.grupos = d => {
       ${lista.map((x, i) => `<tr class="${i < f.segundos ? "q2" : ""}${i === f.segundos - 1 ? " corte" : ""}"><td>${i + 1}</td><td class="n">${esc(d.eq[x.id].nombre)}</td><td class="n">${esc(x.grupo)}</td><td>${x.pj}</td><td>${x.gf - x.gc}</td><td>${x.gf}</td><td class="p">${x.pts}</td></tr>`).join("")}</table></div>`;
   }
   return `<h2>Grupos</h2><p class="sub">Desempate: puntos, diferencia de goles, goles a favor y resultado entre ellos.</p>${leyenda()}
-    <div class="grid g3">${S.cfg.grupos.map(g => tabla(d, g)).join("")}</div>${seg}`;
+    <div class="gfull">${S.cfg.grupos.map(g => tabla(d, g)).join("")}</div>${seg}`;
 };
 V.llave = d => d ? `<h2>Fase final</h2><p class="sub">Empate = penales directo. Los cruces se arman solos al terminar la fase de grupos.</p>${llave(d)}` : sinTorneo();
 
@@ -712,12 +720,12 @@ V.ayudante = d => {
   if (!d) return `<div class="vacio"><h2>Aún no hay torneo</h2><p class="muted">Cuando el organizador publique los grupos, aquí te aparecerán los partidos de tu consola.</p></div>`;
   if (!S.puede) return `<div class="card" style="max-width:480px;display:grid;gap:14px"><h2 style="margin:0">¡Hola, ayudante!</h2>
       <p style="margin:0">Escribe tu nombre y la clave de ayudantes que te dio el organizador. Tu nombre quedará registrado en cada resultado que subas.</p>
-      <label>Tu nombre<input id="f-ayudante" maxlength="30" autocomplete="name" value="${esc(S.ayudante)}"></label>
-      <label>Clave de ayudantes<input id="f-clave" type="password" autocomplete="off"></label>
+      <label>Tu nombre<input id="f-ayudante" maxlength="30" autocomplete="name" value="${esc(S.ayudante)}"${errAttr("nombre")}></label>${errHtml("nombre")}
+      <label>Clave de ayudantes<input id="f-clave" type="password" autocomplete="off"${errAttr("clave")}></label>${errHtml("clave")}
       <button class="btn pri grande" data-acc="entrar-ayud">Entrar</button>${S.authError ? '<p class="mal" style="margin:0">No se pudo iniciar sesión. Revisa la conexión o que el acceso anónimo esté activado en Firebase.</p>' : ""}</div>`;
   if (!S.ayudante) return `<div class="card" style="max-width:480px;display:grid;gap:14px"><h2 style="margin:0">¿Cómo te llamas?</h2>
       <p style="margin:0">Quedará registrado en cada resultado que subas.</p>
-      <label>Tu nombre<input id="f-ayudante" maxlength="30" autocomplete="name"></label><button class="btn pri grande" data-acc="nombre-ayudante">Continuar</button></div>`;
+      <label>Tu nombre<input id="f-ayudante" maxlength="30" autocomplete="name"${errAttr("nombre")}></label>${errHtml("nombre")}<button class="btn pri grande" data-acc="nombre-ayudante">Continuar</button></div>`;
   const chips = [1, 2, 3].map(c => `<button class="chip" data-consola="${c}" aria-pressed="${S.consola === c}">Consola ${c}</button>`).join("");
   const mias = d.r.partidos.filter(m => m.consola === S.consola).sort((a, b) => a.turno - b.turno);
   const sig = mias.find(m => !T.final(S.res[m.id]));
@@ -811,9 +819,11 @@ function panelDueno(d) {
       <div class="grid" style="gap:8px">${S.cfg.equipos.map(e => `<input data-ren="${esc(e.id)}" value="${esc(e.nombre)}" maxlength="40" aria-label="Nombre del dúo">`).join("")}</div>
       <button class="btn pri" style="margin-top:12px" data-acc="renombrar">Guardar nombres</button></div></div>`;
 }
+const errHtml = campo => S.err && S.err.campo === campo ? `<p class="err" id="err-${campo}">${esc(S.err.msg)}</p>` : "";
+const errAttr = campo => S.err && S.err.campo === campo ? ` aria-invalid="true" aria-describedby="err-${campo}"` : "";
 function soloDueno() {
   return `<div class="card" style="max-width:480px;display:grid;gap:14px"><h2 style="margin:0">Organizador</h2><p style="margin:0">Escribe la clave de organizador.</p>
-    <label>Clave de organizador<input id="f-clave" type="password" autocomplete="off"></label><button class="btn pri grande" data-acc="entrar-org">Entrar</button>
+    <label>Clave de organizador<input id="f-clave" type="password" autocomplete="off"${errAttr("clave")}></label>${errHtml("clave")}<button class="btn pri grande" data-acc="entrar-org">Entrar</button>
     ${S.authError ? '<p class="mal" style="margin:0">No se pudo iniciar sesión. Revisa la conexión o que el acceso anónimo esté activado en Firebase.</p>' : ""}</div>`;
 }
 function sinTorneo() {
@@ -911,6 +921,7 @@ document.addEventListener("click", async ev => {
   if (ev.target.closest("#modal")) return;
   const t = ev.target.closest("button,[data-acc]");
   if (!t || t.disabled) return;
+  if (S.ocupado && ["empezar", "terminar", "publicar", "renombrar"].includes(t.dataset.acc)) return;
   const d = S.cfg ? derivar() : null;
   if (t.dataset.consola) { S.consola = +t.dataset.consola; LS.set("pch-consola", S.consola); S.edit = null; return render(); }
   if (t.dataset.corr) { S.edit = { ...nuevoEdit(t.dataset.corr), corr: true }; render(); return $(".edcard")?.scrollIntoView({ behavior: "smooth", block: "start" }); }
@@ -932,19 +943,22 @@ document.addEventListener("click", async ev => {
     case "copiar-mio": return d && copiar(textoMio(d));
     case "nombre-ayudante": {
       const v = ($("#f-ayudante")?.value || "").trim().slice(0, 30);
-      if (!v) return toast("Escribe tu nombre.");
+      if (!v) { S.err = { campo: "nombre", msg: "Escribe tu nombre para que quede en el registro." }; render(); return $("#f-ayudante")?.focus(); }
+      S.err = null;
       S.ayudante = v; LS.set("pch-ayudante", v); return render();
     }
     case "entrar-ayud": case "entrar-org": {
       const org = t.dataset.acc === "entrar-org";
       const clave = ($("#f-clave")?.value || "").trim();
       const nombre = org ? "Organizador" : ($("#f-ayudante")?.value || "").trim().slice(0, 30);
-      if (!org && !nombre) return toast("Escribe tu nombre.");
-      if (!clave) return toast("Escribe la clave.");
-      if (!S.uid) return toast("No se pudo iniciar sesión. Revisa la conexión a internet.");
-      t.disabled = true;
+      const fallo = (campo, msg) => { S.err = { campo, msg }; if (!org) { S.ayudante = nombre; } render(); document.getElementById(campo === "nombre" ? "f-ayudante" : "f-clave")?.focus(); };
+      if (!org && !nombre) return fallo("nombre", "Escribe tu nombre para que quede en el registro.");
+      if (!clave) return fallo("clave", "Escribe la clave que te dio el organizador.");
+      if (!S.uid) return fallo("clave", "No se pudo conectar. Revisa el internet y vuelve a intentar.");
+      t.disabled = true; t.setAttribute("aria-busy", "true"); t.textContent = "Entrando…";
       try { await db.doc(`${org ? "organizadores" : "ayudantes"}/${S.uid}`).set({ clave, nombre, t: Date.now() }); }
-      catch (e) { t.disabled = false; return toast(e && e.code === "permission-denied" ? "Clave incorrecta." : "No se pudo entrar. Revisa la conexión."); }
+      catch (e) { return fallo("clave", e && e.code === "permission-denied" ? "Esa clave no es correcta. Revísala y vuelve a escribirla." : "No se pudo conectar. Revisa el internet y vuelve a intentar."); }
+      S.err = null;
       if (org) S.esDueno = true; else { S.esAyudante = true; S.ayudante = nombre; LS.set("pch-ayudante", nombre); }
       S.puede = S.esDueno || S.esAyudante; toast("¡Listo!"); return render();
     }
@@ -965,11 +979,13 @@ document.addEventListener("click", async ev => {
       const B = S.borrador, minT = Math.max(10, Math.min(30, parseInt(B.minTurno, 10) || 15));
       const cfg = { nombre: (B.nombre || "Torneo").slice(0, 40), inicio: /^\d\d:\d\d$/.test(B.inicio) ? B.inicio : "08:00", minTurno: minT, consolas: 3,
         equipos: S.preview.equipos, grupos: S.preview.grupos, gen: Date.now().toString(36) };
+      S.ocupado = true;
       try {
         await store.config(cfg);
         if (S.ctrl.atraso) await store.ctrl({ atraso: 0 });
-        S.preview = null; S.borrador = null; S.rehacer = false; toast("¡Torneo publicado!"); location.hash = "#organizar"; render();
+        S.preview = null; S.borrador = null; S.rehacer = false; toast("¡Torneo publicado!"); location.hash = "#organizar";
       } catch {}
+      S.ocupado = false; render();
       return;
     }
     case "renombrar": {
@@ -981,25 +997,29 @@ document.addEventListener("click", async ev => {
     }
     case "empezar": {
       Object.assign(S.edit, { gl: 0, gv: 0, al: 0, av: 0, pen: null });
+      S.ocupado = true; t.setAttribute("aria-busy", "true"); t.textContent = "Empezando…";
       try { await store.res(S.edit.id, { estado: "jugando", gl: 0, gv: 0, al: 0, av: 0 }, quienSoy()); } catch {}
-      return render();
+      S.ocupado = false; return render();
     }
     case "terminar": {
       const m = d.r.por[S.edit.id], E = { ...S.edit }, corr = T.final(S.res[E.id]);
       if (m.fase !== "G" && E.gl === E.gv && !E.pen) return toast("Empate: marca quién ganó en penales.");
       const txt = `${esc(d.eq[m.l].nombre)} <b>${E.gl} – ${E.gv}</b> ${esc(d.eq[m.v].nombre)}${E.al + E.av ? `<br>Amarillas: ${E.al} – ${E.av}` : ""}${m.fase !== "G" && E.gl === E.gv ? `<br>Gana en penales: <b>${esc(d.eq[E.pen === "l" ? m.l : m.v].nombre)}</b>` : ""}<br><span class="muted">Queda registrado a nombre de ${esc(quienSoy())}.</span>`;
       if (!(await confirmar(corr ? "¿Guardar la corrección?" : "¿Terminar el partido?", txt, corr ? "Guardar" : "Terminar"))) return;
-      vivoPend[E.id] = null;
+      vivoPend[E.id] = null; S.ocupado = true;
       try {
         await store.res(E.id, { estado: "final", gl: E.gl, gv: E.gv, al: E.al, av: E.av, pen: m.fase !== "G" && E.gl === E.gv ? E.pen : null }, quienSoy());
         toast(corr ? "Corrección guardada." : "Partido terminado."); S.edit = null;
       } catch {}
-      return render();
+      S.ocupado = false; return render();
     }
   }
 });
 document.addEventListener("input", ev => {
   const id = ev.target.id;
+  if (S.err && ((S.err.campo === "clave" && id === "f-clave") || (S.err.campo === "nombre" && id === "f-ayudante")) && ev.target.value.trim()) {
+    S.err = null; ev.target.removeAttribute("aria-invalid"); ev.target.removeAttribute("aria-describedby"); ev.target.closest("label")?.nextElementSibling?.classList.contains("err") && ev.target.closest("label").nextElementSibling.remove();
+  }
   if (!S.borrador) return;
   if (id === "f-texto") { S.borrador.texto = ev.target.value; const c = $("#conteo"); if (c) c.innerHTML = conteo(); }
   if (id === "f-nombre") S.borrador.nombre = ev.target.value;
