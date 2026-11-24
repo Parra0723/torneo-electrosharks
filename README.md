@@ -8,13 +8,17 @@ Cambia `USUARIO` y `REPO` por los tuyos.
 
 | Para | Link |
 |---|---|
-| Pantalla grande (también para los jugadores) | `https://USUARIO.github.io/REPO/#pantalla` |
+| Jugadores (buscan su dúo, ven los partidos en vivo, las tablas y la llave) | `https://USUARIO.github.io/REPO/` |
+| Pantalla grande (televisor o proyector) | `https://USUARIO.github.io/REPO/#pantalla` |
 | Ayudantes (celular) | `https://USUARIO.github.io/REPO/#ayudante` |
 | Organizador | `https://USUARIO.github.io/REPO/#organizar` |
+
+La pantalla grande se ajusta sola al tamaño del televisor o proyector, sin barras de desplazamiento. Ábrela en pantalla completa (F11).
 
 ## Archivos
 
 - `index.html`: toda la página.
+- `assets/`: logo, íconos de la pestaña y la imagen que aparece al compartir el link.
 - `config.js`: los datos de tu proyecto de Firebase. **Es lo único que tienes que editar.**
 - `firestore.rules`: reglas de seguridad para pegar en Firebase (con tus claves).
 
