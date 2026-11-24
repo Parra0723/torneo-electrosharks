@@ -269,6 +269,7 @@ tr.corte td{border-bottom:2px dashed var(--b2)}
 .btn[aria-busy=true]{opacity:.75;cursor:progress}
 .btn.grande{min-height:58px;font-size:18px;width:100%;margin-top:12px}
 .btn.chico{min-height:44px;padding:0 14px;font-size:14px;border-radius:10px}
+.btn svg{width:20px;height:20px;flex:none}
 .chips{display:flex;gap:8px;flex-wrap:wrap}
 .chip{min-height:48px;padding:0 16px;border-radius:12px;border:1px solid var(--b2);background:var(--s1);color:var(--hielo);font:700 16px/1 var(--f);cursor:pointer;transition:background-color .15s}
 .chip[aria-pressed=true]{background:var(--hielo);border-color:var(--hielo);color:var(--tinta)}
@@ -874,6 +875,7 @@ const ICO = {
   llave: svg('<rect x="3" y="4" width="5" height="4" rx="1"/><rect x="3" y="16" width="5" height="4" rx="1"/><path d="M8 6h3v12H8M11 12h4"/><rect x="15" y="10" width="6" height="4" rx="1"/>'),
   duo: svg('<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17.5" cy="9" r="2.5"/><path d="M16.2 14.6A5 5 0 0 1 21.5 20"/>'),
   lupa: svg('<circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/>', 2.2),
+  pdf: svg('<path d="M12 3v12M7.5 7.5 12 3l4.5 4.5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/>'),
 };
 const PUBLICAS = [["inicio", "Inicio", "inicio"], ["calendario", "Calendario", "calendario"], ["grupos", "Grupos", "grupos"], ["llave", "Llave", "llave"], ["mi-duo", "Mi dúo", "duo"]];
 
@@ -1009,7 +1011,7 @@ V["mi-duo"] = d => {
   return `<div class="dos"><div class="duo">${sel}<h2 style="margin-top:14px">${esc(e.nombre)}</h2><p class="sub" style="margin:0">${esc([e.j1, e.j2].filter(Boolean).join(" y "))}</p>
       <div class="fila" style="margin:10px 0 16px"><span class="pill">${pos}º del grupo ${esc(g.id)}</span><span class="pill" style="background:var(--soft);color:var(--ink)">${esc(est)}</span></div>
       ${proxHtml}<h3 style="margin:22px 0 10px">Todos sus partidos</h3><div class="pts">${mios.map(m => `<div><div class="muted" style="font-size:14px;margin:4px 0">${esc(d.hora(m.turno))}</div>${filaPartido(m, d, e.id)}</div>`).join("")}</div>
-      <p><button class="btn" data-acc="copiar-mio">Copiar su horario</button></p></div>
+      <p><button class="btn" data-acc="pdf-mio">${ICO.pdf}Compartir su horario en PDF</button></p></div>
     <div>${tabla(d, g)}</div></div>`;
 };
 function estadoDuo(d, id) {
@@ -1030,7 +1032,7 @@ V.calendario = d => {
   if (!d) return sinTorneo();
   const turnos = [...new Set(d.r.partidos.map(m => m.turno))].sort((a, b) => a - b);
   return `<h2>Calendario</h2><p class="sub">${esc(T.FORMATOS[S.cfg.equipos.length].texto)}. Cada turno dura ${S.cfg.minTurno} minutos.${S.ctrl.atraso ? ` Horas ajustadas por ${S.ctrl.atraso} min de atraso.` : ""}</p>
-    <div class="fila" style="margin-bottom:8px"><button class="btn" data-acc="copiar-todo">Copiar calendario para WhatsApp</button></div>
+    <div class="fila" style="margin-bottom:8px"><button class="btn" data-acc="pdf-todo">${ICO.pdf}Compartir calendario en PDF</button></div>
     ${turnos.map(t => `<div class="turno${t === d.actual ? " ahora" : ""}"><div class="hora">${esc(d.hora(t))}<small>Turno ${t + 1}${t === d.actual ? ", ahora" : ""}</small></div>
       <div class="pts">${d.r.partidos.filter(m => m.turno === t).map(m => filaPartido(m, d)).join("")}</div></div>`).join("")}`;
 };
@@ -1213,7 +1215,7 @@ function panelDueno(d) {
         <p class="muted" style="font-size:14px;margin:10px 0 0">Los ayudantes entran con la <b>clave de ayudantes</b>; no necesitan cuenta. Los jugadores pueden abrir el link de la pantalla en su celular para ver todo.</p></div>
       <div class="card"><h3>Atraso</h3><p class="muted" style="margin:6px 0 12px">Si van tarde, súmale minutos y todas las horas pendientes se corren solas.</p>
         <div class="fila"><button class="btn" data-atraso="-5">− 5 min</button><span class="cond" style="font-size:28px;font-weight:800">${at > 0 ? "+" : ""}${at} min</span><button class="btn" data-atraso="5">+ 5 min</button><button class="btn" data-atraso="0">Sin atraso</button></div></div>
-      <div class="card"><h3>Jugadores</h3><p class="muted" style="margin:6px 0 12px">Manda el calendario al grupo de WhatsApp.</p><button class="btn acc" data-acc="copiar-todo">Copiar calendario para WhatsApp</button></div>
+      <div class="card"><h3>Jugadores</h3><p class="muted" style="margin:6px 0 12px">Manda el calendario en PDF al grupo de WhatsApp: los grupos, todos los partidos con hora y consola, y las reglas.</p><button class="btn acc" data-acc="pdf-todo">${ICO.pdf}Compartir calendario en PDF</button></div>
       <div class="card"><h3>Empezar de cero</h3><p class="muted" style="margin:6px 0 12px">Vuelve a sortear o cambia la lista. El torneo actual sigue hasta que publiques el nuevo.</p>
         <button class="btn peligro" data-acc="rehacer">Crear torneo nuevo</button></div></div>
     <div class="card"><h3>Nombres</h3><p class="muted" style="margin:6px 0 12px;font-size:14px">Corrige un nombre sin perder resultados.</p>
@@ -1240,20 +1242,275 @@ function sinConfig() {
 function sinAcceso() { return sinConfig(); }
 
 /* ---------- Textos para copiar ---------- */
-function textoTodo(d) {
-  const L = [`*${S.cfg.nombre} — Calendario*`, "", ...S.cfg.grupos.map(g => `*Grupo ${g.id}:* ${g.equipos.map(id => d.eq[id].nombre).join(", ")}`), ""];
-  for (const t of [...new Set(d.r.partidos.map(m => m.turno))].sort((a, b) => a - b)) {
-    L.push(`*${d.hora(t)}*`);
-    for (const m of d.r.partidos.filter(m => m.turno === t)) L.push(`Consola ${m.consola}: ${m.l ? d.eq[m.l].nombre : m.ph[0]} vs ${m.v ? d.eq[m.v].nombre : m.ph[1]}${m.fase === "G" ? ` (Grupo ${m.grupo})` : ` (${T.KO_NOMBRE[m.id]})`}`);
-    L.push("");
+const HELV_R = [278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584,350,556,350,222,556,333,1000,556,556,333,1000,667,333,1000,350,611,350,350,222,222,333,333,350,556,1000,333,1000,500,333,944,350,500,667,278,333,556,556,556,556,260,556,333,737,370,556,584,333,737,333,400,584,333,333,333,556,537,278,333,333,365,556,834,834,834,611,667,667,667,667,667,667,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,500,556,556,556,556,278,278,278,278,556,556,556,556,556,556,556,584,611,556,556,556,556,500,556,500];
+const HELV_B = [278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,333,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,584,350,556,350,278,556,500,1000,556,556,333,1000,667,333,1000,350,611,350,350,278,278,500,500,350,556,1000,333,1000,556,333,944,350,500,667,278,333,556,556,556,556,280,556,333,737,370,556,584,333,737,333,400,584,333,333,333,611,556,278,333,333,365,556,834,834,834,611,722,722,722,722,722,722,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,556,556,556,556,556,278,278,278,278,611,611,611,611,611,611,611,584,611,611,611,611,611,556,611,556];
+/* ---------- PDF para compartir por WhatsApp (hecho aquí, sin librerías): A4, Helvetica y colores de ElectroSharks ---------- */
+const CP1252 = { 8364: 128, 8218: 130, 402: 131, 8222: 132, 8230: 133, 8224: 134, 8225: 135, 710: 136, 8240: 137, 352: 138, 8249: 139, 338: 140, 381: 142, 8216: 145, 8217: 146, 8220: 147, 8221: 148, 8226: 149, 8211: 150, 8212: 151, 732: 152, 8482: 153, 353: 154, 8250: 155, 339: 156, 382: 158, 376: 159 };
+function bytesPdf(s) {
+  const out = [];
+  for (const ch of String(s ?? "").normalize("NFC")) {
+    const c = ch.codePointAt(0);
+    if ((c >= 32 && c < 127) || (c >= 160 && c <= 255)) out.push(c);
+    else if (CP1252[c]) out.push(CP1252[c]);
+    else if (c === 9 || (c >= 0x2000 && c <= 0x200A) || c === 0x202F || c === 0x205F || c === 0x3000) out.push(32);
+    // lo demás (emojis, otros alfabetos) no existe en Helvetica: se omite
   }
-  L.push("Empate en eliminatoria = penales directo. Si tu dúo no llega en 5 min, el organizador puede pasar tu partido a más tarde o darlo perdido 3-0.");
-  return L.join("\n");
+  const sin = out.filter((c, i) => c !== 32 || out[i - 1] !== 32);
+  while (sin[0] === 32) sin.shift();
+  while (sin[sin.length - 1] === 32) sin.pop();
+  return sin;
 }
-function textoMio(d) {
-  const e = d.eq[S.miDuo];
-  const ms = d.r.partidos.filter(m => m.l === e.id || m.v === e.id).sort((a, b) => a.turno - b.turno);
-  return [`*${e.nombre}* — ${S.cfg.nombre}`, ...ms.map(m => `${d.hora(m.turno)} · Consola ${m.consola} · vs ${d.eq[m.l === e.id ? m.v : m.l]?.nombre || "?"} (${T.nombreFase(m)})`)].join("\n");
+const anchoPdf = (by, t, b) => by.reduce((s, c) => s + ((b ? HELV_B : HELV_R)[c - 32] || 0), 0) * t / 1000;
+const LOGO_PDF = { src: "assets/logo-pdf.jpg", w: 320, h: 222 };
+let logoPdf = null, logoPedido = false;
+function pedirLogoPdf() {
+  if (logoPedido) return; logoPedido = true;
+  fetch(LOGO_PDF.src).then(r => r.ok ? r.arrayBuffer() : null).then(b => { if (b) logoPdf = new Uint8Array(b); }).catch(() => {});
+}
+function nuevoPdf(titulo) {
+  const W = 595.28, H = 841.89, pags = [];
+  let ops = null;
+  const f = n => String(Math.round(n * 100) / 100);
+  const col = c => { const n = parseInt(c.slice(1), 16); return [n >> 16, (n >> 8) & 255, n & 255].map(v => f(v / 255)).join(" "); };
+  const hex = by => by.map(c => c.toString(16).padStart(2, "0")).join("");
+  const P = {
+    W, H,
+    pagina() { ops = []; pags.push({ ops, links: [] }); return pags.length; },
+    irA(n) { ops = pags[n - 1].ops; },
+    total: () => pags.length,
+    rect(x, y, w, h, c) { ops.push(`${col(c)} rg ${f(x)} ${f(H - y - h)} ${f(w)} ${f(h)} re f`); },
+    rectR(x, y, w, h, r, c) {
+      const k = 0.5523 * r, X = x, Y = H - y - h, R = X + w, A = Y + h;
+      ops.push(`${col(c)} rg ${f(X + r)} ${f(Y)} m ${f(R - r)} ${f(Y)} l ${f(R - r + k)} ${f(Y)} ${f(R)} ${f(Y + r - k)} ${f(R)} ${f(Y + r)} c ${f(R)} ${f(A - r)} l ${f(R)} ${f(A - r + k)} ${f(R - r + k)} ${f(A)} ${f(R - r)} ${f(A)} c ${f(X + r)} ${f(A)} l ${f(X + r - k)} ${f(A)} ${f(X)} ${f(A - r + k)} ${f(X)} ${f(A - r)} c ${f(X)} ${f(Y + r)} l ${f(X)} ${f(Y + r - k)} ${f(X + r - k)} ${f(Y)} ${f(X + r)} ${f(Y)} c f`);
+    },
+    poli(pts, c) { ops.push(`${col(c)} rg ${pts.map(([x, y], i) => `${f(x)} ${f(H - y)} ${i ? "l" : "m"}`).join(" ")} h f`); },
+    linea(x1, y1, x2, y2, c, g = 0.6) { ops.push(`${col(c)} RG ${f(g)} w ${f(x1)} ${f(H - y1)} m ${f(x2)} ${f(H - y2)} l S`); },
+    ancho: (s, t = 10, b = false) => anchoPdf(bytesPdf(s), t, b),
+    /* Texto con la línea base en y (medida desde arriba). o: t tamaño, b negrita, i negrita itálica, c color, al l|c|r, max ancho (corta con …) */
+    texto(x, y, s, o = {}) {
+      const t = o.t || 10, b = !!(o.b || o.i);
+      let by = bytesPdf(s);
+      if (o.max && anchoPdf(by, t, b) > o.max) {
+        const e = anchoPdf([133], t, b);
+        while (by.length && anchoPdf(by, t, b) + e > o.max) by.pop();
+        while (by.length && by[by.length - 1] === 32) by.pop();
+        by.push(133);
+      }
+      const w = anchoPdf(by, t, b), xx = o.al === "r" ? x - w : o.al === "c" ? x - w / 2 : x;
+      if (by.length) ops.push(`BT /${o.i ? "F3" : b ? "F2" : "F1"} ${f(t)} Tf ${col(o.c || "#00104F")} rg ${f(xx)} ${f(H - y)} Td <${hex(by)}> Tj ET`);
+      return w;
+    },
+    /* Párrafo con saltos de línea por ancho; devuelve la y de la línea siguiente */
+    parrafo(x, y, w, s, o = {}) {
+      const t = o.t || 10, lh = o.lh || t * 1.45;
+      let linea = "";
+      for (const pal of String(s).split(/\s+/).filter(Boolean)) {
+        const prueba = linea ? linea + " " + pal : pal;
+        if (linea && P.ancho(prueba, t, o.b) > w) { P.texto(x, y, linea, o); y += lh; linea = pal; } else linea = prueba;
+      }
+      if (linea) { P.texto(x, y, linea, o); y += lh; }
+      return y;
+    },
+    logo(x, y, w) { if (!logoPdf) return false; ops.push(`q ${f(w)} 0 0 ${f(w * LOGO_PDF.h / LOGO_PDF.w)} ${f(x)} ${f(H - y - w * LOGO_PDF.h / LOGO_PDF.w)} cm /Im1 Do Q`); return true; },
+    enlace(x, y, w, h, url) { pags[pags.length - 1].links.push({ rect: `[${f(x)} ${f(H - y - h)} ${f(x + w)} ${f(H - y)}]`, url }); },
+    bytes() {
+      const enc = new TextEncoder(), partes = [], offs = [];
+      let largo = 0;
+      const poner = x => { const u = typeof x === "string" ? enc.encode(x) : x; partes.push(u); largo += u.length; };
+      const obj = (id, cuerpo) => { offs[id] = largo; poner(`${id} 0 obj\n`); cuerpo(); poner("\nendobj\n"); };
+      const conLogo = !!logoPdf && pags.some(p => p.ops.some(o => o.includes("/Im1")));
+      const utf16 = t => [...String(t)].map(ch => { const c = ch.codePointAt(0); return c > 0xFFFF ? "" : c.toString(16).padStart(4, "0"); }).join("");
+      let n = 7;
+      const lista = pags.map(p => ({ p, pag: ++n, cont: ++n, notas: p.links.map(() => ++n) }));
+      poner("%PDF-1.4\n%âãÏÓ\n");
+      obj(1, () => poner("<< /Type /Catalog /Pages 2 0 R >>"));
+      obj(2, () => poner(`<< /Type /Pages /Kids [${lista.map(x => x.pag + " 0 R").join(" ")}] /Count ${lista.length} >>`));
+      obj(3, () => poner("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>"));
+      obj(4, () => poner("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>"));
+      obj(5, () => poner("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-BoldOblique /Encoding /WinAnsiEncoding >>"));
+      obj(6, () => { if (!conLogo) return poner("null");
+        poner(`<< /Type /XObject /Subtype /Image /Width ${LOGO_PDF.w} /Height ${LOGO_PDF.h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${logoPdf.length} >>\nstream\n`); poner(logoPdf); poner("\nendstream"); });
+      obj(7, () => poner(`<< /Title <FEFF${utf16(titulo)}> /Producer (Torneo ElectroSharks) >>`));
+      for (const { p, pag, cont, notas } of lista) {
+        obj(pag, () => poner(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${f(W)} ${f(H)}] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >>${conLogo ? " /XObject << /Im1 6 0 R >>" : ""} >> /Contents ${cont} 0 R${notas.length ? ` /Annots [${notas.map(x => x + " 0 R").join(" ")}]` : ""} >>`));
+        const st = p.ops.join("\n");
+        obj(cont, () => poner(`<< /Length ${st.length} >>\nstream\n${st}\nendstream`));
+        p.links.forEach((l, i) => obj(notas[i], () => poner(`<< /Type /Annot /Subtype /Link /Rect ${l.rect} /Border [0 0 0] /A << /S /URI /URI (${l.url.replace(/[()\\]/g, "\\$&")}) >> >>`)));
+      }
+      const xref = largo;
+      poner(`xref\n0 ${n + 1}\n0000000000 65535 f \n${Array.from({ length: n }, (_, i) => String(offs[i + 1]).padStart(10, "0") + " 00000 n \n").join("")}`);
+      poner(`trailer\n<< /Size ${n + 1} /Root 1 0 R /Info 7 0 R >>\nstartxref\n${xref}\n%%EOF\n`);
+      const out = new Uint8Array(largo); let pos = 0;
+      for (const u of partes) { out.set(u, pos); pos += u.length; }
+      return out;
+    },
+  };
+  return P;
+}
+const PC = { abismo: "#000B45", azul: "#001E96", carmesi: "#D20043", tinta: "#00104F", gris: "#5A6390", mut: "#A7B1DC", claro: "#F2F3F8", resalta: "#E3E8FA", borde: "#D9DCE8", blanco: "#FFFFFF" };
+const actualizadoPdf = () => "actualizado el " + new Date().toLocaleString("es-VE", { day: "numeric", month: "long", hour: "numeric", minute: "2-digit" });
+function encabezadoPdf(P, titulo, sub1, sub2) {
+  const W = P.W;
+  P.rect(0, 0, W, 116, PC.abismo);
+  P.poli([[W - 128, 0], [W - 92, 0], [W - 152, 116], [W - 188, 116]], PC.azul);
+  P.poli([[W - 80, 0], [W - 66, 0], [W - 126, 116], [W - 140, 116]], PC.carmesi);
+  P.rectR(28, 26, 82, 60, 9, PC.blanco);
+  if (!P.logo(35, 32, 68)) P.texto(69, 61, "ElectroSharks", { t: 9, b: true, c: PC.azul, al: "c" });
+  const x = 128, max = W - x - 200, t = Math.max(18, Math.min(30, 30 * max / Math.max(1, P.ancho(titulo, 30, true))));
+  const w = P.texto(x, 58, titulo, { t, i: true, c: PC.blanco, max });
+  P.poli([[x + 5, 66], [x + Math.min(w, 230) + 5, 66], [x + Math.min(w, 230), 72], [x, 72]], PC.carmesi);
+  P.texto(x, 90, sub1, { t: 10, c: PC.blanco, max: W - x - 200 });
+  P.texto(x, 104, sub2, { t: 8.5, c: PC.mut, max: W - x - 200 });
+}
+function seccionPdf(P, y, titulo, nota) {
+  P.poli([[30, y - 12], [36, y - 12], [33, y + 2], [27, y + 2]], PC.carmesi);
+  P.texto(42, y, titulo, { t: 15, i: true });
+  if (nota) P.texto(P.W - 28, y, nota, { t: 8.5, c: PC.gris, al: "r", max: P.W - 260 });
+  return y + 14;
+}
+function piesPdf(P) {
+  const url = URL_BASE.replace(/index\.html$/, ""), corto = url.replace(/^https?:\/\//, "").replace(/\/$/, ""), n = P.total();
+  for (let i = 1; i <= n; i++) {
+    P.irA(i);
+    P.linea(28, P.H - 40, P.W - 28, P.H - 40, PC.borde);
+    const w = P.texto(28, P.H - 25, "Horario en vivo: " + corto, { t: 8.5, b: true, c: PC.azul });
+    P.enlace(26, P.H - 36, w + 4, 16, url);
+    P.texto(P.W - 28, P.H - 25, `Página ${i} de ${n}`, { t: 8.5, c: PC.gris, al: "r" });
+  }
+}
+const nombrePdf = (d, id, ph) => id ? d.eq[id]?.nombre || "?" : ph || "Por definir";
+function celdaPdf(P, d, m, x, y, w) {
+  const r = S.res[m.id], fin = T.final(r), vivo = r && r.estado === "jugando", ph = m.ph || [], marcador = fin || vivo;
+  const max = w - 16 - (marcador ? 16 : 0);
+  P.texto(x + 8, y + 14, nombrePdf(d, m.l, ph[0]), { t: 9, b: !!m.l, c: m.l ? PC.tinta : PC.gris, max });
+  const wvs = P.texto(x + 8, y + 26, "vs", { t: 7.5, c: PC.gris }) + 3;
+  P.texto(x + 8 + wvs, y + 26, nombrePdf(d, m.v, ph[1]), { t: 9, b: !!m.v, c: m.v ? PC.tinta : PC.gris, max: max - wvs });
+  if (marcador) for (const [k, yy] of [["gl", 14], ["gv", 26]]) P.texto(x + w - 8, y + yy, String(num(r[k])), { t: 10, b: true, al: "r", c: vivo ? PC.carmesi : PC.tinta });
+  const meta = (m.fase === "G" ? `Grupo ${m.grupo}, fecha ${m.jornada}` : T.KO_NOMBRE[m.id]) + (vivo ? ", en vivo" : fin ? (r.pen ? ", por penales" : "") : d.nuevaHora(m) ? ", nueva hora" : "");
+  P.texto(x + 8, y + 37, meta, { t: 7, c: vivo ? PC.carmesi : d.nuevaHora(m) ? PC.azul : PC.gris, max: w - 16 });
+}
+function reglasPdf(P, y) {
+  const f = T.FORMATOS[S.cfg.equipos.length];
+  const reglas = [
+    `${f.texto.charAt(0).toUpperCase()}${f.texto.slice(1)}. Después: cuartos, semifinales, tercer puesto y final.`,
+    `Partidos de dos tiempos de 4 minutos. Cada turno dura ${S.cfg.minTurno} minutos con el cambio de jugadores.`,
+    "Empate en eliminatoria: penales directo, sin tiempo extra.",
+    "Si tu dúo no llega en 5 minutos, el organizador puede jugar otro partido y pasar el tuyo a más tarde, o darlo perdido 3 a 0.",
+    "Desempate en grupos: puntos, diferencia de goles, goles a favor, resultado entre ellos y menos tarjetas amarillas.",
+  ];
+  let alto = 34;
+  for (const t of reglas) alto += Math.ceil(P.ancho(t, 9) / (P.W - 56 - 40)) * 13 + 4;
+  if (y + alto > P.H - 56) { P.pagina(); y = 40; }
+  P.rect(28, y, P.W - 56, alto, PC.claro);
+  P.rect(28, y, 4, alto, PC.azul);
+  P.texto(44, y + 20, "Cómo funciona", { t: 11, b: true });
+  let yy = y + 38;
+  for (const t of reglas) { P.rect(46, yy - 6, 4, 4, PC.carmesi); yy = P.parrafo(58, yy, P.W - 56 - 46, t, { t: 9, lh: 13 }) + 4; }
+}
+/* Calendario completo: grupos, todos los turnos por consola y las reglas */
+function pdfCalendario(d) {
+  const P = nuevoPdf(`Calendario: ${S.cfg.nombre}`), n = S.cfg.equipos.length;
+  P.pagina();
+  encabezadoPdf(P, S.cfg.nombre, `Calendario. FIFA 2 contra 2 en PS5: ${n} dúos y ${S.cfg.consolas || 3} consolas.`, "Calendario " + actualizadoPdf());
+  let y = seccionPdf(P, 148, "Grupos", T.FORMATOS[n].texto);
+  const gr = S.cfg.grupos, cols = 3, gap = 10, bw = (P.W - 56 - gap * (cols - 1)) / cols, bh = 132;
+  gr.forEach((g, i) => {
+    const x = 28 + (i % cols) * (bw + gap), yy = y + Math.floor(i / cols) * (bh + gap);
+    const filas = T.tablaGrupo(g, d.cal.partidos, S.res), jugado = filas.some(f => f.pj);
+    P.rect(x, yy, bw, bh, PC.claro);
+    P.rect(x, yy, bw, 22, PC.azul);
+    P.texto(x + 10, yy + 15, `Grupo ${g.id}`, { t: 10, b: true, c: PC.blanco });
+    if (jugado) P.texto(x + bw - 10, yy + 15, "Pts", { t: 8, b: true, c: PC.mut, al: "r" });
+    filas.forEach((fl, k) => {
+      const e = d.eq[fl.id], ry = yy + 30 + k * 25, jug = [e.j1, e.j2].filter(Boolean).join(" y ");
+      P.texto(x + 10, ry + 9, e.nombre, { t: 9.5, b: true, max: bw - 20 - (jugado ? 22 : 0) });
+      if (jug) P.texto(x + 10, ry + 19, jug, { t: 7.5, c: PC.gris, max: bw - 20 });
+      if (jugado) P.texto(x + bw - 10, ry + 9, String(fl.pts), { t: 10, b: true, al: "r" });
+    });
+  });
+  y += Math.ceil(gr.length / cols) * (bh + gap) + 22;
+  y = seccionPdf(P, y, "Partidos", "Si hay atrasos, las horas cambian: revisa el horario en vivo.");
+  const xT = 28, wT = 66, wC = (P.W - 56 - wT) / 3, alto = 42;
+  const cabecera = yy => {
+    P.rect(28, yy, P.W - 56, 22, PC.abismo);
+    P.texto(xT + 8, yy + 15, "Hora", { t: 8.5, b: true, c: PC.blanco });
+    for (let c = 1; c <= 3; c++) P.texto(xT + wT + (c - 1) * wC + 8, yy + 15, `Consola ${c}`, { t: 8.5, b: true, c: PC.blanco });
+    return yy + 22;
+  };
+  y = cabecera(y);
+  const turnos = [...new Set(d.r.partidos.map(m => m.turno))].sort((a, b) => a - b);
+  turnos.forEach((t, i) => {
+    if (y + alto > P.H - 56) { P.pagina(); y = cabecera(36); }
+    if (i % 2 === 0) P.rect(28, y, P.W - 56, alto, PC.claro);
+    if (t === d.actual) P.rect(28, y, 3, alto, PC.carmesi);
+    P.texto(xT + 8, y + 17, d.hora(t), { t: 9.5, b: true });
+    P.texto(xT + 8, y + 29, `Turno ${t + 1}`, { t: 7.5, c: PC.gris });
+    for (let c = 1; c < 3; c++) P.linea(xT + wT + c * wC, y + 6, xT + wT + c * wC, y + alto - 6, PC.borde);
+    for (const m of d.r.partidos.filter(m => m.turno === t)) celdaPdf(P, d, m, xT + wT + (m.consola - 1) * wC, y, wC);
+    y += alto;
+  });
+  reglasPdf(P, y + 18);
+  piesPdf(P);
+  return P.bytes();
+}
+/* Horario de un dúo: sus partidos y la tabla de su grupo */
+function pdfDuo(d, id) {
+  const e = d.eq[id], g = S.cfg.grupos.find(x => x.equipos.includes(id)), jug = [e.j1, e.j2].filter(Boolean).join(" y ");
+  const P = nuevoPdf(`Horario de ${e.nombre}`);
+  P.pagina();
+  encabezadoPdf(P, e.nombre, `${jug ? `Jugadores: ${jug}. ` : ""}Grupo ${g.id}.`, `${S.cfg.nombre}, horario ${actualizadoPdf()}`);
+  let y = seccionPdf(P, 148, "Sus partidos", estadoDuo(d, id));
+  const mios = d.r.partidos.filter(m => m.l === id || m.v === id).sort((a, b) => a.turno - b.turno);
+  const prox = mios.find(m => !T.final(S.res[m.id]));
+  const cx = [28, 118, 186, 386, P.W - 28];
+  P.rect(28, y, P.W - 56, 22, PC.abismo);
+  ["Hora", "Consola", "Rival", "Fase"].forEach((t, i) => P.texto(cx[i] + 8, y + 15, t, { t: 8.5, b: true, c: PC.blanco }));
+  P.texto(cx[4] - 8, y + 15, "Resultado", { t: 8.5, b: true, c: PC.blanco, al: "r" });
+  y += 22;
+  mios.forEach((m, i) => {
+    const r = S.res[m.id], fin = T.final(r), vivo = r && r.estado === "jugando", yo = m.l === id, rival = yo ? m.v : m.l;
+    const a = num(yo ? r?.gl : r?.gv), b = num(yo ? r?.gv : r?.gl), w = m.fase !== "G" && fin ? T.ganadorKO(m, r) : null;
+    const res = vivo ? `En vivo ${a}–${b}` : !fin ? (prox && m.id === prox.id ? "Próximo" : "") : a > b || w === id ? `Ganó ${a}–${b}${a === b ? " (pen.)" : ""}` : a < b || (w && w !== id) ? `Perdió ${a}–${b}${a === b ? " (pen.)" : ""}` : `Empató ${a}–${b}`;
+    if (i % 2 === 0) P.rect(28, y, P.W - 56, 32, PC.claro);
+    if (prox && m.id === prox.id) P.rect(28, y, 4, 32, PC.carmesi);
+    P.texto(cx[0] + 10, y + 20, d.hora(m.turno), { t: 10, b: true });
+    P.texto(cx[1] + 8, y + 20, String(m.consola), { t: 10, b: true });
+    P.texto(cx[2] + 8, y + 20, nombrePdf(d, rival, (m.ph || [])[yo ? 1 : 0]), { t: 10, b: !!rival, c: rival ? PC.tinta : PC.gris, max: cx[3] - cx[2] - 16 });
+    P.texto(cx[3] + 8, y + 20, T.nombreFase(m) + (d.nuevaHora(m) ? ", nueva hora" : ""), { t: 8.5, c: d.nuevaHora(m) ? PC.azul : PC.gris, max: 120 });
+    P.texto(cx[4] - 8, y + 20, res, { t: 9.5, b: true, al: "r", c: vivo || res === "Próximo" ? PC.carmesi : PC.tinta });
+    y += 32;
+  });
+  y = seccionPdf(P, y + 40, `Grupo ${g.id}`, "Orden: puntos, diferencia de goles y goles a favor");
+  const tc = [28, 58, 300, 348, 396, 444, 492, P.W - 28], cab = ["#", "Dúo", "PJ", "G", "E", "P", "DG", "Pts"];
+  P.rect(28, y, P.W - 56, 22, PC.abismo);
+  cab.forEach((t, i) => i < 2 ? P.texto(tc[i] + 8, y + 15, t, { t: 8.5, b: true, c: PC.blanco }) : P.texto(tc[i] + (i === 7 ? -8 : 30), y + 15, t, { t: 8.5, b: true, c: PC.blanco, al: i === 7 ? "r" : "c" }));
+  y += 22;
+  T.tablaGrupo(g, d.cal.partidos, S.res).forEach((fl, k) => {
+    const mio = fl.id === id, dg = fl.gf - fl.gc;
+    P.rect(28, y, P.W - 56, 26, mio ? PC.resalta : k % 2 === 0 ? PC.claro : PC.blanco);
+    if (mio) P.rect(28, y, 4, 26, PC.azul);
+    P.texto(tc[0] + 10, y + 17, String(k + 1), { t: 9.5, b: true });
+    P.texto(tc[1] + 8, y + 17, d.eq[fl.id].nombre, { t: 9.5, b: mio, max: tc[2] - tc[1] - 16 });
+    [fl.pj, fl.g, fl.e, fl.p, dg > 0 ? "+" + dg : dg].forEach((v, i) => P.texto(tc[i + 2] + 30, y + 17, String(v), { t: 9.5, al: "c" }));
+    P.texto(tc[7] - 8, y + 17, String(fl.pts), { t: 10, b: true, al: "r" });
+    y += 26;
+  });
+  reglasPdf(P, y + 30);
+  piesPdf(P);
+  return P.bytes();
+}
+const slug = s => norm(s).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "torneo";
+/* En el celular abre el menú de compartir (WhatsApp); en la computadora descarga el PDF */
+async function compartirPdf(bytes, nombre, titulo) {
+  const file = new File([bytes], nombre, { type: "application/pdf" });
+  if (matchMedia("(pointer: coarse)").matches && navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: titulo }); return; }
+    catch (e) { if (e && e.name === "AbortError") return; }
+  }
+  const url = URL.createObjectURL(file), a = document.createElement("a");
+  a.href = url; a.download = nombre; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+  toast("PDF descargado. Adjúntalo en WhatsApp.");
 }
 
 /* ---------- Render ---------- */
@@ -1266,6 +1523,7 @@ function render() {
   let d = null;
   try { if (S.cfg) d = derivar(); } catch (e) { console.error(e); }
   const vista = vistaActual();
+  if (["calendario", "organizar", "mi-duo"].includes(vista)) pedirLogoPdf();
   document.body.dataset.vista = vista;
   if (vista === "pantalla") $("#toast").hidden = true;
   $("#nombre").textContent = S.cfg?.nombre || "Torneo";
@@ -1381,8 +1639,8 @@ document.addEventListener("click", async ev => {
   if (t.dataset.ej) { S.borrador.texto = EJEMPLO.slice(0, +t.dataset.ej).map((x, i) => `${x} - ${JUG[(i * 2) % 16]} / ${JUG[(i * 2 + 1) % 16]}`).join("\n"); S.preview = null; return render(); }
   switch (t.dataset.acc) {
     case "local": LS.set("pch-usar-local", true); return usarLocal();
-    case "copiar-todo": return d && copiar(textoTodo(d));
-    case "copiar-mio": return d && copiar(textoMio(d));
+    case "pdf-todo": return d && compartirPdf(pdfCalendario(d), `calendario-${slug(S.cfg.nombre)}.pdf`, `Calendario: ${S.cfg.nombre}`);
+    case "pdf-mio": return d && d.eq[S.miDuo] && compartirPdf(pdfDuo(d, S.miDuo), `horario-${slug(d.eq[S.miDuo].nombre)}.pdf`, `Horario de ${d.eq[S.miDuo].nombre}`);
     case "nombre-ayudante": {
       const v = ($("#f-ayudante")?.value || "").trim().slice(0, 30);
       if (!v) { S.err = { campo: "nombre", msg: "Escribe tu nombre para que quede en el registro." }; render(); return $("#f-ayudante")?.focus(); }

@@ -19,11 +19,12 @@ La pantalla grande se ajusta sola al tamaño del televisor o proyector, sin barr
 
 - **Cambiar un partido:** si un dúo llega tarde o no está, toca *Cambiar* en su consola y elige otro partido para jugar en ese momento. El que no se jugó pasa a la hora del partido elegido. Solo aparecen partidos posibles (nadie juega dos veces en el mismo turno) y avisa si un dúo jugaría dos turnos seguidos. Ayudantes, pantalla y jugadores lo ven al instante, y se puede deshacer mientras esos partidos no hayan empezado.
 - **Atraso:** si van tarde en general, suma minutos y todas las horas pendientes se corren.
+- **Calendario en PDF:** *Compartir calendario en PDF* (en el panel y en Calendario) arma un PDF con los grupos, todos los partidos con hora y consola, los resultados que ya haya y las reglas. En el celular abre el menú de compartir para mandarlo por WhatsApp; en la computadora lo descarga. En *Mi dúo* está el PDF con el horario de un solo dúo.
 
 ## Archivos
 
 - `index.html`: toda la página.
-- `assets/`: logo, íconos de la pestaña y la imagen que aparece al compartir el link.
+- `assets/`: logo, íconos de la pestaña, la imagen que aparece al compartir el link y el logo de los PDF.
 - `config.js`: los datos de tu proyecto de Firebase. **Es lo único que tienes que editar.**
 - `firestore.rules`: reglas de seguridad para pegar en Firebase (con tus claves).
 
