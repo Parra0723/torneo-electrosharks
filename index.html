@@ -286,6 +286,34 @@ textarea{min-height:320px;font:15px/1.5 ui-monospace,Menlo,monospace}
 .form{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr))}
 [aria-invalid=true]{border-color:var(--carmesi-t)}
 .err{color:var(--carmesi-t);font-weight:700;font-size:15px;margin:-2px 0 0}
+/* Cambiar un partido (organizador) */
+select{appearance:none;-webkit-appearance:none;padding-right:44px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239DB4FF' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;background-size:20px;cursor:pointer}
+select option{background:#0A1554;color:var(--hielo)}
+.cb-t{margin-bottom:4px}
+.cb{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:6px 14px;padding:12px 0;border-top:1px solid var(--b1)}
+.cb-l .cb:first-child{border-top:0}
+.cb-c{font-stretch:75%;font-weight:800;font-size:17px;color:var(--voltio-t);white-space:nowrap}
+.cb-p b{display:block;font-weight:700;line-height:1.3}
+.cb-p small{display:block;color:var(--mut);font-size:13px;line-height:1.35;margin-top:2px}
+@media (max-width:600px){.cb{grid-template-columns:minmax(0,1fr) auto;padding:14px 0}.cb-c{grid-column:1/-1;font-size:16px}}
+.cb-hechos{margin-top:12px;padding-top:14px;border-top:1px solid var(--b2)}
+.cb-hechos h4{margin:0 0 10px;font-size:16px;font-weight:800}
+.cb-hechos ol{list-style:none;margin:0 0 14px;padding:0;display:grid;gap:12px}
+.cb-hechos li{display:grid;gap:2px;font-size:14px;line-height:1.35}
+.ops{display:grid;grid-auto-rows:max-content;gap:8px;max-height:min(56vh,520px);overflow-y:auto;overscroll-behavior:contain;margin:0 -6px;padding:2px 6px}
+.op-h{display:flex;align-items:baseline;gap:10px;margin:10px 0 0;font-stretch:75%;font-weight:900;font-size:22px}
+.op-h:first-child{margin-top:0}
+.op-h small{font-stretch:100%;font-weight:600;font-size:13px;color:var(--mut)}
+.op{display:grid;gap:3px;width:100%;min-height:48px;padding:12px 14px;text-align:left;border-radius:12px;border:1px solid var(--b2);background:var(--s1);color:var(--hielo);cursor:pointer;transition:background-color .15s,border-color .15s}
+.op b{font-weight:700;line-height:1.3}
+.op span{font-size:14px;color:var(--mut)}
+.op .op-av{color:var(--carmesi-t);font-weight:600}
+.op:hover{background:var(--s2);border-color:var(--voltio-t)}
+.op:focus-visible{outline:3px solid var(--voltio-t);outline-offset:2px}
+.cambio-av{margin:12px 0 0;padding:10px 12px;border-radius:10px;background:rgba(47,91,240,.18);border:1px solid rgba(157,180,255,.4);font-size:15px;line-height:1.4}
+.pt .c .nueva{display:block;width:fit-content;margin:4px 0 0}
+.hc-sig .pt .c .nueva{margin:0}
+.nueva{display:inline-block;margin-left:6px;padding:0 8px;border-radius:99px;border:1px solid currentColor;color:var(--voltio-t);font-size:12px;font-weight:700;line-height:1.6;white-space:nowrap;vertical-align:1px}
 
 /* Mi dúo */
 .duo{display:grid;gap:6px}
@@ -622,9 +650,55 @@ const T = (() => {
     return `${h12}:${String(mm).padStart(2, "0")} ${hh < 12 ? "a. m." : "p. m."}`;
   }
 
+  /* ---- Cambios del organizador: dos partidos intercambian turno y consola ---- */
+  const ANTES = { SF1: ["QF1", "QF2"], SF2: ["QF3", "QF4"], P3: ["SF1", "SF2"], F: ["SF1", "SF2"] };
+
+  /* Aplica en orden la lista de cambios [{a, b}]. Cada partido guarda dónde iba al principio (t0, c0). */
+  function aplicarCambios(cal, lista) {
+    const validos = Array.isArray(lista) ? lista.filter(c => c && typeof c.a === "string" && typeof c.b === "string" && c.a !== c.b) : [];
+    if (!validos.length) return cal;
+    const ps = cal.partidos.map(m => ({ ...m, t0: m.turno, c0: m.consola }));
+    const por = Object.fromEntries(ps.map(m => [m.id, m]));
+    for (const { a, b } of validos) {
+      const x = por[a], y = por[b];
+      if (!x || !y) continue;
+      [x.turno, y.turno] = [y.turno, x.turno];
+      [x.consola, y.consola] = [y.consola, x.consola];
+    }
+    ps.sort((x, y) => x.turno - y.turno || x.consola - y.consola);
+    return { ...cal, partidos: ps };
+  }
+
+  /* Partidos que se pueden jugar en el lugar de aId (el de aId pasa al lugar del elegido).
+     Solo partidos sin empezar, de un turno posterior y de la misma fase; nadie puede jugar dos veces en un turno
+     y en la fase final cada partido va después de los que le dan sus rivales.
+     seguidos: dúos que con el cambio jugarían más turnos seguidos que antes. */
+  function opcionesCambio(partidos, res, aId) {
+    const a = partidos.find(m => m.id === aId);
+    if (!a || res[aId] || !a.l || !a.v) return [];
+    const de = m => [m.l, m.v].filter(Boolean);
+    const pegados = (ps, e) => {
+      const ts = ps.filter(m => m.l === e || m.v === e).map(m => m.turno).sort((x, y) => x - y);
+      let n = 0; for (let i = 1; i < ts.length; i++) if (ts[i] - ts[i - 1] === 1) n++;
+      return n;
+    };
+    const out = [];
+    for (const b of partidos) {
+      if (b.id === a.id || b.turno <= a.turno || res[b.id] || !b.l || !b.v || (a.fase === "G") !== (b.fase === "G")) continue;
+      const ps = partidos.map(m => m.id === a.id ? { ...m, turno: b.turno, consola: b.consola } : m.id === b.id ? { ...m, turno: a.turno, consola: a.consola } : m);
+      const choca = (t, x) => ps.some(m => m.turno === t && m.id !== x.id && de(m).some(e => e === x.l || e === x.v));
+      if (choca(a.turno, b) || choca(b.turno, a)) continue;
+      const turno = Object.fromEntries(ps.map(m => [m.id, m.turno]));
+      if (Object.entries(ANTES).some(([k, prev]) => turno[k] != null && prev.some(p => turno[p] >= turno[k]))) continue;
+      const seguidos = [...new Set([...de(a), ...de(b)])].filter(e => pegados(ps, e) > pegados(partidos, e));
+      out.push({ id: b.id, seguidos });
+    }
+    return out;
+  }
+
   function nombreFase(m) { return m.fase === "G" ? `Grupo ${m.grupo}, fecha ${m.jornada}` : KO_NOMBRE[m.id]; }
 
-  return { FORMATOS, KO_IDS, KO_NOMBRE, sortearGrupos, calendario, tablaGrupo, clasificados, cruces, resolver, ganadorKO, final, gruposTerminados, horaTurno, nombreFase };
+  return { FORMATOS, KO_IDS, KO_NOMBRE, sortearGrupos, calendario, aplicarCambios, opcionesCambio, tablaGrupo, clasificados, cruces, resolver, ganadorKO, final, gruposTerminados, horaTurno, nombreFase };
 })();
 
 
@@ -639,7 +713,7 @@ const LS = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
 };
 const S = {
-  modo: "cargando", cfg: null, resRaw: [], res: {}, ctrl: { atraso: 0 },
+  modo: "cargando", cfg: null, resRaw: [], res: {}, ctrl: { atraso: 0, cambios: null }, turnoCambio: null,
   esDueno: false, esAyudante: false, puede: false, authError: false, uid: null, consola: LS.get("pch-consola", 1), miDuo: LS.get("pch-miduo", ""),
   ayudante: LS.get("pch-ayudante", ""), err: null, ocupado: false, edit: null, borrador: null, preview: null, rehacer: false, aviso: "", soloLectura: false,
 };
@@ -652,6 +726,13 @@ function recalcRes() {
   S.res = res;
 }
 function guardarLocal() { LS.set("pch-local", { cfg: S.cfg, res: S.res, ctrl: S.ctrl }); }
+/* torneo/control: atraso en minutos y cambios de partidos del organizador ({ gen, lista: [{ a, b, t }] }) */
+function leerCtrl(x) {
+  const c = x?.cambios, lista = c && typeof c.gen === "string" && Array.isArray(c.lista) ? c.lista.filter(e => e && typeof e.a === "string" && typeof e.b === "string") : [];
+  return { atraso: Number.isFinite(x?.atraso) ? x.atraso : 0, cambios: lista.length ? { gen: c.gen, lista } : null };
+}
+const cambiosVigentes = () => S.cfg && S.ctrl.cambios?.gen === S.cfg.gen ? S.ctrl.cambios.lista : [];
+const ctrlDoc = extra => ({ atraso: S.ctrl.atraso || 0, cambios: S.ctrl.cambios || null, ...extra });
 const colas = {};
 function enCola(clave, fn) { colas[clave] = (colas[clave] || Promise.resolve()).then(fn, fn); return colas[clave]; }
 function errorEscritura(e) {
@@ -704,11 +785,16 @@ function golNuevo(id, r) {
 }
 
 function derivar() {
-  const cfg = S.cfg, cal = T.calendario(cfg), r = T.resolver(cfg, cal, S.res);
+  const cfg = S.cfg, cal = T.aplicarCambios(T.calendario(cfg), cambiosVigentes()), r = T.resolver(cfg, cal, S.res);
   const eq = Object.fromEntries(cfg.equipos.map(e => [e.id, e]));
   const pend = r.partidos.filter(m => !T.final(S.res[m.id]));
   const actual = pend.length ? Math.min(...pend.map(m => m.turno)) : null;
-  return { cal, r, eq, actual, hora: t => T.horaTurno(cfg, t, S.ctrl.atraso || 0) };
+  /* Partidos movidos por el organizador: cuál iba al principio en cada turno y consola */
+  const lugar = {};
+  for (const m of r.partidos) if (m.t0 != null) lugar[m.t0 + "-" + m.c0] = m.id;
+  const enLugarDe = id => { const m = r.por[id], o = m && m.t0 != null ? lugar[m.turno + "-" + m.consola] : null; return o && o !== id ? r.por[o] : null; };
+  const nuevaHora = m => m.t0 != null && m.t0 !== m.turno && !S.res[m.id];
+  return { cal, r, eq, actual, enLugarDe, nuevaHora, hora: t => T.horaTurno(cfg, t, S.ctrl.atraso || 0) };
 }
 function faseTexto(d) {
   if (!d) return "Sin torneo";
@@ -729,7 +815,7 @@ function filaPartido(m, d, marcar) {
     ? `<span class="mc">${r.gl} – ${r.gv}${r.gl === r.gv && r.pen ? `<span class="pen">gana en penales</span>` : ""}</span>`
     : vivo ? `<span class="mc envivo">${num(r.gl)} – ${num(r.gv)}<span class="pen vivo">en vivo</span></span>` : `<span class="vs">vs</span>`;
   const mio = marcar && (m.l === marcar || m.v === marcar) ? " mio" : "";
-  return `<div class="pt${mio}"><span class="c"><b>Consola ${m.consola}</b>${esc(T.nombreFase(m))}</span>
+  return `<div class="pt${mio}"><span class="c"><b>Consola ${m.consola}</b>${esc(T.nombreFase(m))}${d.nuevaHora(m) ? '<span class="nueva">Nueva hora</span>' : ""}</span>
     <span class="l ${cls(m.l)}">${r && (fin || vivo) ? tarj(num(r.al)) + " " : ""}${nom(d, m.l, ph[0])}</span>${centro}<span class="v ${cls(m.v)}">${nom(d, m.v, ph[1])}${r && (fin || vivo) ? " " + tarj(num(r.av)) : ""}</span></div>`;
 }
 function tabla(d, g, mini) {
@@ -834,7 +920,7 @@ function tarjetaDuo(d, id) {
   const r = prox && S.res[prox.id], vivo = r && r.estado === "jugando";
   const yo = prox && prox.l === id;
   const proxHtml = prox
-    ? `<div class="tuyo-prox"><span class="muted">${vivo ? "Jugando ahora" : "Próximo partido"}</span><span class="cond">${vivo ? `${num(yo ? r.gl : r.gv)} – ${num(yo ? r.gv : r.gl)}` : esc(d.hora(prox.turno))}</span><span>Consola ${prox.consola}, contra <b>${nom(d, rival(prox), "Por definir")}</b></span></div>`
+    ? `<div class="tuyo-prox"><span class="muted">${vivo ? "Jugando ahora" : "Próximo partido"}${d.nuevaHora(prox) ? ' <span class="nueva">Nueva hora</span>' : ""}</span><span class="cond">${vivo ? `${num(yo ? r.gl : r.gv)} – ${num(yo ? r.gv : r.gl)}` : esc(d.hora(prox.turno))}</span><span>Consola ${prox.consola}, contra <b>${nom(d, rival(prox), "Por definir")}</b></span></div>`
     : `<div class="tuyo-prox"><span class="cond" style="font-size:32px">${esc(estadoDuo(d, id))}</span><span class="muted">No tiene más partidos programados.</span></div>`;
   return `<div class="tuyo" id="tuyo"><div class="tuyo-h"><div><p class="tuyo-n">${esc(e.nombre)}</p><p class="tuyo-j">${esc([e.j1, e.j2].filter(Boolean).join(" y "))}</p></div><button class="btn chico" data-acc="otro-duo">Cambiar</button></div>
     <div class="fila"><span class="pill">${pos}º del grupo ${esc(g.id)}</span><span class="pill">${esc(estadoDuo(d, id))}</span></div>
@@ -853,7 +939,7 @@ function formatoHtml() {
     <ul class="reglas">
       <li><b>Partidos de dos tiempos de 4 minutos.</b> Cada turno dura ${S.cfg?.minTurno || 15} minutos con el cambio de jugadores.</li>
       <li><b>Empate en eliminatoria:</b> penales directo, sin tiempo extra.</li>
-      <li><b>Si tu dúo no llega en 5 minutos,</b> pierde 3 a 0.</li>
+      <li><b>Si tu dúo no llega en 5 minutos,</b> el organizador puede jugar otro partido y pasar el tuyo a más tarde, o darlo perdido 3 a 0.</li>
       <li><b>Desempate en grupos:</b> puntos, diferencia de goles, goles a favor, resultado entre ellos y menos tarjetas amarillas.</li>
     </ul></section>`;
 }
@@ -917,7 +1003,7 @@ V["mi-duo"] = d => {
   const prox = mios.find(m => !T.final(S.res[m.id]));
   const est = estadoDuo(d, e.id);
   const rival = m => m.l === e.id ? m.v : m.l;
-  const proxHtml = prox ? `<div class="prox"><span class="muted">Próximo partido, ${esc(T.nombreFase(prox))}</span>
+  const proxHtml = prox ? `<div class="prox"><span class="muted">Próximo partido, ${esc(T.nombreFase(prox))}${d.nuevaHora(prox) ? ' <span class="nueva">Nueva hora</span>' : ""}</span>
       <span class="cond">${esc(d.hora(prox.turno))}, consola ${prox.consola}</span><span style="font-size:20px">contra <b>${nom(d, rival(prox))}</b></span></div>`
     : `<div class="prox"><span class="cond">${esc(est)}</span><span class="muted">No tiene más partidos programados.</span></div>`;
   return `<div class="dos"><div class="duo">${sel}<h2 style="margin-top:14px">${esc(e.nombre)}</h2><p class="sub" style="margin:0">${esc([e.j1, e.j2].filter(Boolean).join(" y "))}</p>
@@ -971,7 +1057,9 @@ function editor(d, m) {
   const cab = `<div class="fila" style="justify-content:space-between"><span><b>${esc(T.nombreFase(m))}</b><br><span class="muted">${esc(d.hora(m.turno))}, consola ${m.consola}</span></span>
       ${fin ? '<span class="estado fin">Corrigiendo resultado</span>' : vivo ? '<span class="vivo">En vivo</span>' : '<span class="estado">Por empezar</span>'}</div>`;
   if (!listo) return `<div class="card edcard">${cab}<p class="aviso" style="margin:12px 0 0">Los rivales se definen cuando terminen los partidos anteriores.</p></div>`;
-  if (!fin && !vivo) return `<div class="card edcard">${cab}<div class="vsg"><span>${nom(d, m.l)}</span><i>vs</i><span>${nom(d, m.v)}</span></div>
+  const otro = !fin && !vivo ? d.enLugarDe(m.id) : null;
+  const avisoCambio = otro ? `<p class="cambio-av">El organizador cambió este partido: se juega en lugar de <b>${nom(d, otro.l, otro.ph?.[0])} vs ${nom(d, otro.v, otro.ph?.[1])}</b>.</p>` : "";
+  if (!fin && !vivo) return `<div class="card edcard">${cab}${avisoCambio}<div class="vsg"><span>${nom(d, m.l)}</span><i>vs</i><span>${nom(d, m.v)}</span></div>
     <button class="btn pri grande" data-acc="empezar">Empezar partido</button><p class="muted" style="font-size:14px;margin:8px 0 0">Desde que empiece, cada gol y cada amarilla se ven al instante en la pantalla.</p></div>`;
   const lado = (k, a, id) => `<div class="ed"><span class="n">${nom(d, id)}</span><span class="g">${E[k]}</span>
     <div class="bs"><button data-gol="${k}" data-d="-1" aria-label="Quitar gol">−</button><button data-gol="${k}" data-d="1" aria-label="Sumar gol" class="mas">+ Gol</button></div></div>`;
@@ -1000,7 +1088,8 @@ V.ayudante = d => {
   const chips = [1, 2, 3].map(c => `<button class="chip" data-consola="${c}" aria-pressed="${S.consola === c}">Consola ${c}</button>`).join("");
   const mias = d.r.partidos.filter(m => m.consola === S.consola).sort((a, b) => a.turno - b.turno);
   const sig = mias.find(m => !T.final(S.res[m.id]));
-  if (!S.edit || !mias.some(m => m.id === S.edit.id) || (T.final(S.res[S.edit.id]) && !S.edit.corr)) S.edit = sig ? nuevoEdit(sig.id) : null;
+  const editMovido = S.edit && !S.edit.corr && !S.res[S.edit.id] && sig && S.edit.id !== sig.id;
+  if (!S.edit || !mias.some(m => m.id === S.edit.id) || (T.final(S.res[S.edit.id]) && !S.edit.corr) || editMovido) S.edit = sig ? nuevoEdit(sig.id) : null;
   const ed = S.edit ? editor(d, d.r.por[S.edit.id]) : `<div class="card"><h3>¡Listo!</h3><p>No quedan partidos en la consola ${S.consola}.</p></div>`;
   const despues = sig ? mias.find(m => m.turno > sig.turno && !T.final(S.res[m.id])) : null;
   const llamar = despues ? `<div class="card llamar"><span class="muted">Después en tu consola, a las ${esc(d.hora(despues.turno))}</span><b>${nom(d, despues.l, despues.ph?.[0])} vs ${nom(d, despues.v, despues.ph?.[1])}</b><span class="muted" style="font-size:14px">Avísales para que estén listos.</span></div>` : "";
@@ -1070,11 +1159,53 @@ function conteo() {
   if (n !== new Set(eqs.map(e => e.nombre.toLowerCase())).size) return `<span class="mal">${n} dúos: hay nombres repetidos</span>`;
   return T.FORMATOS[n] ? `<span class="ok">${n} dúos. ${esc(T.FORMATOS[n].texto)}</span>` : `<span class="mal">${n} dúos: faltan o sobran (deben ser 16, 20 o 24)</span>`;
 }
+/* Cambiar un partido: si un dúo llega tarde o no está, en esa consola se juega otro y el suyo pasa a la hora del elegido */
+function cardCambios(d) {
+  if (d.actual == null) return "";
+  const turnos = [...new Set(d.r.partidos.filter(m => m.turno >= d.actual && !T.final(S.res[m.id])).map(m => m.turno))].sort((a, b) => a - b);
+  if (!turnos.includes(S.turnoCambio)) S.turnoCambio = d.actual;
+  const t = S.turnoCambio;
+  const filas = d.r.partidos.filter(m => m.turno === t).sort((a, b) => a.consola - b.consola).map(m => {
+    const r = S.res[m.id], fin = T.final(r), vivo = r && r.estado === "jugando";
+    const accion = fin ? `<span class="estado fin">Terminado</span>` : vivo ? `<span class="vivo">En vivo</span>`
+      : m.l && m.v ? `<button class="btn chico" data-cambiar="${esc(m.id)}" aria-label="Cambiar el partido de la consola ${m.consola}">Cambiar</button>` : `<span class="estado">Por definir</span>`;
+    const otro = !fin && !vivo ? d.enLugarDe(m.id) : null;
+    return `<div class="cb"><span class="cb-c">Consola ${m.consola}</span><span class="cb-p"><b>${nom(d, m.l, m.ph?.[0])} vs ${nom(d, m.v, m.ph?.[1])}</b>
+      <small>${otro ? `En lugar de ${nom(d, otro.l, otro.ph?.[0])} vs ${nom(d, otro.v, otro.ph?.[1])}` : esc(T.nombreFase(m))}</small></span>${accion}</div>`;
+  }).join("");
+  const lista = cambiosVigentes(), ult = lista[lista.length - 1];
+  const par = id => { const m = d.r.por[id]; return m ? `${nom(d, m.l, m.ph?.[0])} vs ${nom(d, m.v, m.ph?.[1])}` : "?"; };
+  const hechos = lista.length ? `<div class="cb-hechos"><h4>Cambios hechos</h4><ol>${lista.slice().reverse().map(c => `<li><span class="muted">${c.t ? esc(hhmm(c.t)) : ""}</span>
+      <span>Se adelantó <b>${par(c.b)}</b></span><span>Pasó más tarde <b>${par(c.a)}</b></span></li>`).join("")}</ol>
+      ${!S.res[ult.a] && !S.res[ult.b] ? `<button class="btn" data-acc="deshacer-cambio">Deshacer el último cambio</button>` : `<p class="muted" style="font-size:14px;margin:0">El último cambio ya no se puede deshacer porque uno de esos partidos ya empezó.</p>`}</div>` : "";
+  return `<div class="card" id="cambios"><h3>Cambiar un partido</h3>
+    <p class="muted" style="margin:6px 0 12px">Si un dúo llega tarde o no está, en su consola se juega otro partido y el suyo pasa a la hora del que elijas. Ayudantes, pantalla y jugadores lo ven al instante.</p>
+    <label class="cb-t">Turno<select id="sel-turno">${turnos.map(x => `<option value="${x}"${x === t ? " selected" : ""}>Turno ${x + 1}, ${esc(d.hora(x))}${x === d.actual ? " (ahora)" : ""}</option>`).join("")}</select></label>
+    <div class="cb-l">${filas}</div>${hechos}</div>`;
+}
+/* Lista de partidos que pueden jugarse en lugar de aId; devuelve el elegido o null */
+function elegirCambio(d, aId) {
+  return new Promise(res => {
+    const a = d.r.por[aId], ops = T.opcionesCambio(d.r.partidos, S.res, aId), grupos = {};
+    for (const o of ops) { const m = d.r.por[o.id]; (grupos[m.turno] = grupos[m.turno] || []).push({ m, o }); }
+    const html = Object.keys(grupos).map(Number).sort((x, y) => x - y).map(t => `<h4 class="op-h">${esc(d.hora(t))}<small>Turno ${t + 1}</small></h4>
+      ${grupos[t].sort((x, y) => x.m.consola - y.m.consola).map(({ m, o }) => `<button class="op" data-op="${esc(m.id)}"><b>${nom(d, m.l)} vs ${nom(d, m.v)}</b><span>${esc(T.nombreFase(m))}, consola ${m.consola}</span>${o.seguidos.length
+        ? `<span class="op-av">${o.seguidos.map(e => esc(d.eq[e]?.nombre || "?")).join(" y ")} jugaría${o.seguidos.length > 1 ? "n" : ""} dos turnos seguidos</span>` : ""}</button>`).join("")}`).join("");
+    const c = $("#modal-c");
+    c.innerHTML = `<h3>¿Qué partido se juega en la consola ${a.consola}?</h3><p style="margin:0">A las ${esc(d.hora(a.turno))} tocaba <b>${nom(d, a.l)} vs ${nom(d, a.v)}</b>. Ese partido pasa a la hora del que elijas.</p>
+      ${ops.length ? `<div class="ops">${html}</div>` : `<p class="muted" style="margin:0">No hay otro partido que se pueda jugar a esa hora: en todos juega algún dúo que ya tiene partido en ese turno. Puedes esperar unos minutos o darlo perdido 3 a 0.</p>`}
+      <div class="fila" style="justify-content:flex-end"><button class="btn" data-m="no">Cancelar</button></div>`;
+    $("#modal").hidden = false;
+    (c.querySelector(".op") || c.querySelector('[data-m="no"]')).focus();
+    c.onclick = ev => { const b = ev.target.closest("[data-op],[data-m]"); if (!b) return; ev.stopPropagation(); $("#modal").hidden = true; c.onclick = null; res(b.dataset.op || null); if (pendiente) render(); };
+  });
+}
 function panelDueno(d) {
   const at = S.ctrl.atraso || 0;
   const link = (t, h, desc) => `<div class="lnk"><div><b>${t}</b><div class="muted" style="font-size:14px">${desc}</div><code>${esc(URL_BASE + h)}</code></div><button class="btn chico" data-copiar="${esc(URL_BASE + h)}">Copiar</button></div>`;
   return `<h2>Panel del organizador</h2><p class="sub">${esc(S.cfg.equipos.length)} dúos. ${esc(T.FORMATOS[S.cfg.equipos.length].texto)}. Termina cerca de las ${esc(d.hora(d.cal.totalTurnos))}</p>
     <div class="dos"><div class="grid">
+      ${cardCambios(d)}
       <div class="card"><h3>Links</h3>
         ${link("Pantalla grande", "#pantalla", "Solo muestra. Sin menús ni botones para editar.")}
         ${link("Ayudantes", "#ayudante", "Para el celular. Solo sirve para cargar resultados de su consola.")}
@@ -1116,7 +1247,7 @@ function textoTodo(d) {
     for (const m of d.r.partidos.filter(m => m.turno === t)) L.push(`Consola ${m.consola}: ${m.l ? d.eq[m.l].nombre : m.ph[0]} vs ${m.v ? d.eq[m.v].nombre : m.ph[1]}${m.fase === "G" ? ` (Grupo ${m.grupo})` : ` (${T.KO_NOMBRE[m.id]})`}`);
     L.push("");
   }
-  L.push("Empate en eliminatoria = penales directo. Si tu dúo no llega en 5 min, pierde 3-0.");
+  L.push("Empate en eliminatoria = penales directo. Si tu dúo no llega en 5 min, el organizador puede pasar tu partido a más tarde o darlo perdido 3-0.");
   return L.join("\n");
 }
 function textoMio(d) {
@@ -1230,7 +1361,23 @@ document.addEventListener("click", async ev => {
     return render();
   }
   if (t.dataset.pen) { S.edit.pen = t.dataset.pen; return render(); }
-  if (t.dataset.atraso) { const v = t.dataset.atraso === "0" ? 0 : Math.max(-60, Math.min(180, (S.ctrl.atraso || 0) + +t.dataset.atraso)); return store.ctrl({ atraso: v }).catch(() => {}); }
+  if (t.dataset.atraso) { const v = t.dataset.atraso === "0" ? 0 : Math.max(-60, Math.min(180, (S.ctrl.atraso || 0) + +t.dataset.atraso)); return store.ctrl(ctrlDoc({ atraso: v })).catch(() => {}); }
+  if (t.dataset.cambiar) {
+    const aId = t.dataset.cambiar, bId = d && await elegirCambio(d, aId);
+    if (!bId) return;
+    const sigue = () => { const dd = derivar(); return T.opcionesCambio(dd.r.partidos, S.res, aId).some(o => o.id === bId) ? dd : null; };
+    let dd = sigue();
+    if (!dd) return toast("Ese cambio ya no se puede hacer: uno de los partidos ya empezó.");
+    const a = dd.r.por[aId], b = dd.r.por[bId];
+    const txt = `Consola ${a.consola}, ${esc(dd.hora(a.turno))}: se juega <b>${nom(dd, b.l)} vs ${nom(dd, b.v)}</b>.<br><b>${nom(dd, a.l)} vs ${nom(dd, a.v)}</b> pasa a las ${esc(dd.hora(b.turno))}, consola ${b.consola}.`;
+    if (!(await confirmar("¿Hacer el cambio?", txt, "Hacer el cambio"))) return;
+    if (!(dd = sigue())) return toast("Ese cambio ya no se puede hacer: uno de los partidos ya empezó.");
+    try {
+      await store.ctrl(ctrlDoc({ cambios: { gen: S.cfg.gen, lista: [...cambiosVigentes(), { a: aId, b: bId, t: Date.now() }] } }));
+      toast(`Cambio hecho: ${dd.eq[a.l].nombre} vs ${dd.eq[a.v].nombre} pasa a las ${dd.hora(b.turno)}, consola ${b.consola}`);
+    } catch {}
+    return;
+  }
   if (t.dataset.ej) { S.borrador.texto = EJEMPLO.slice(0, +t.dataset.ej).map((x, i) => `${x} - ${JUG[(i * 2) % 16]} / ${JUG[(i * 2 + 1) % 16]}`).join("\n"); S.preview = null; return render(); }
   switch (t.dataset.acc) {
     case "local": LS.set("pch-usar-local", true); return usarLocal();
@@ -1278,10 +1425,18 @@ document.addEventListener("click", async ev => {
       S.ocupado = true;
       try {
         await store.config(cfg);
-        if (S.ctrl.atraso) await store.ctrl({ atraso: 0 });
+        if (S.ctrl.atraso || S.ctrl.cambios) await store.ctrl({ atraso: 0, cambios: null });
         S.preview = null; S.borrador = null; S.rehacer = false; toast("¡Torneo publicado!"); location.hash = "#organizar";
       } catch {}
       S.ocupado = false; render();
+      return;
+    }
+    case "deshacer-cambio": {
+      const lista = cambiosVigentes(), ult = lista[lista.length - 1];
+      if (!ult) return;
+      if (S.res[ult.a] || S.res[ult.b]) return toast("Ya no se puede deshacer: uno de esos partidos ya empezó.");
+      if (!(await confirmar("¿Deshacer el último cambio?", "Esos dos partidos vuelven a la hora y la consola que tenían antes del cambio.", "Deshacer"))) return;
+      try { await store.ctrl(ctrlDoc({ cambios: lista.length > 1 ? { gen: S.cfg.gen, lista: lista.slice(0, -1) } : null })); toast("Cambio deshecho."); } catch {}
       return;
     }
     case "renombrar": {
@@ -1323,7 +1478,10 @@ document.addEventListener("input", ev => {
   if (id === "f-inicio") S.borrador.inicio = ev.target.value;
   if (id === "f-min") S.borrador.minTurno = ev.target.value;
 });
-document.addEventListener("change", ev => { if (ev.target.id === "sel-duo") { S.miDuo = ev.target.value; LS.set("pch-miduo", S.miDuo); ev.target.blur(); render(); } });
+document.addEventListener("change", ev => {
+  if (ev.target.id === "sel-duo") { S.miDuo = ev.target.value; LS.set("pch-miduo", S.miDuo); ev.target.blur(); render(); }
+  if (ev.target.id === "sel-turno") { S.turnoCambio = +ev.target.value; ev.target.blur(); render(); $("#sel-turno")?.focus(); }
+});
 document.addEventListener("keydown", ev => {
   if (ev.key === "Escape" && !$("#modal").hidden) $("#modal").querySelector('[data-m="no"],[data-m="si"]')?.click();
   if (ev.key === "Enter" && ev.target.id === "f-ayudante") $('[data-acc="nombre-ayudante"]')?.click();
@@ -1335,7 +1493,7 @@ document.addEventListener("keydown", ev => {
 document.addEventListener("focusout", () => setTimeout(() => { if (pendiente) render(); }, 0));
 window.addEventListener("storage", e => {
   if (S.modo !== "local" || e.key !== "pch-local" || !e.newValue) return;
-  try { const g = JSON.parse(e.newValue); S.cfg = g.cfg; S.res = g.res || {}; S.ctrl = g.ctrl || { atraso: 0 }; render(); } catch {}
+  try { const g = JSON.parse(e.newValue); S.cfg = g.cfg; S.res = g.res || {}; S.ctrl = leerCtrl(g.ctrl); render(); } catch {}
 });
 window.addEventListener("hashchange", () => { S.edit = null; window.scrollTo(0, 0); render(); });
 
@@ -1343,7 +1501,7 @@ window.addEventListener("hashchange", () => { S.edit = null; window.scrollTo(0, 
 function usarLocal() {
   const g = LS.get("pch-local", null);
   S.modo = "local"; S.esDueno = true; S.puede = true; S.uid = "local";
-  if (g) { S.cfg = g.cfg; S.res = g.res || {}; S.ctrl = g.ctrl || { atraso: 0 }; }
+  if (g) { S.cfg = g.cfg; S.res = g.res || {}; S.ctrl = leerCtrl(g.ctrl); }
   render();
 }
 (async () => {
@@ -1370,7 +1528,7 @@ function usarLocal() {
     if (!s.metadata.fromCache) { listo = true; clearTimeout(espera); S.aviso = ""; }
     recalcRes(); llego("cfg");
   }, () => { S.aviso = "Se perdió la conexión con los datos. Recarga la página."; render(); });
-  db.doc("torneo/control").onSnapshot(s => { const x = s.exists ? s.data() : null; S.ctrl = { atraso: Number.isFinite(x?.atraso) ? x.atraso : 0 }; llego("ctrl"); }, () => llego("ctrl"));
+  db.doc("torneo/control").onSnapshot(s => { S.ctrl = leerCtrl(s.exists ? s.data() : null); llego("ctrl"); }, () => llego("ctrl"));
   db.collection("resultados").onSnapshot(s => { S.resRaw = s.docs.map(x => x.data()); recalcRes(); llego("res"); }, () => llego("res"));
   try {
     const auth = firebase.auth();

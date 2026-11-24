@@ -15,6 +15,11 @@ Cambia `USUARIO` y `REPO` por los tuyos.
 
 La pantalla grande se ajusta sola al tamaño del televisor o proyector, sin barras de desplazamiento. Ábrela en pantalla completa (F11).
 
+## Durante el torneo (panel del organizador)
+
+- **Cambiar un partido:** si un dúo llega tarde o no está, toca *Cambiar* en su consola y elige otro partido para jugar en ese momento. El que no se jugó pasa a la hora del partido elegido. Solo aparecen partidos posibles (nadie juega dos veces en el mismo turno) y avisa si un dúo jugaría dos turnos seguidos. Ayudantes, pantalla y jugadores lo ven al instante, y se puede deshacer mientras esos partidos no hayan empezado.
+- **Atraso:** si van tarde en general, suma minutos y todas las horas pendientes se corren.
+
 ## Archivos
 
 - `index.html`: toda la página.
