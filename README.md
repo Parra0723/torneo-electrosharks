@@ -12,6 +12,14 @@ Cambia `USUARIO` y `REPO` por los tuyos.
 | Pantalla grande (televisor o proyector) | `https://USUARIO.github.io/REPO/#pantalla` |
 | Ayudantes (celular) | `https://USUARIO.github.io/REPO/#ayudante` |
 | Organizador | `https://USUARIO.github.io/REPO/#organizar` |
+| Inscripciones y pagos (FIFA y Rocket League) | `https://USUARIO.github.io/REPO/inscripciones.html` |
+
+## Inscripciones (`inscripciones.html`)
+
+Lleva quién se inscribió, en qué torneo, con qué dúo, cuánto pagó y cómo (dólares o bolívares). Los datos se guardan **solo en el navegador donde la abres**, no en Firebase ni en este repositorio, así que nadie más los ve.
+
+- Para pasar los datos a otro teléfono o computadora: *Ajustes → Descargar copia de seguridad* en el primero y *Recuperar una copia de seguridad* en el otro.
+- Descarga una copia de vez en cuando: si se borran los datos del navegador, se pierden.
 
 La pantalla grande se ajusta sola al tamaño del televisor o proyector, sin barras de desplazamiento. Ábrela en pantalla completa (F11).
 
@@ -23,7 +31,8 @@ La pantalla grande se ajusta sola al tamaño del televisor o proyector, sin barr
 
 ## Archivos
 
-- `index.html`: toda la página.
+- `index.html`: toda la página del torneo.
+- `inscripciones.html`: inscripciones y pagos.
 - `assets/`: logo, íconos de la pestaña, la imagen que aparece al compartir el link y el logo de los PDF.
 - `config.js`: los datos de tu proyecto de Firebase. **Es lo único que tienes que editar.**
 - `firestore.rules`: reglas de seguridad para pegar en Firebase (con tus claves).
